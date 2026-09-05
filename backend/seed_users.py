@@ -49,6 +49,38 @@ users = [
         "full_name": "Maintenance Manager",
         "role": models.UserRole.MAINTENANCE,
         "organization": "Platform Operations"
+    },
+    {
+        "email": "dept@example.com",
+        "username": "dept_demo",
+        "password": "password123",
+        "full_name": "Dept Officer",
+        "role": models.UserRole.DEPARTMENT,
+        "organization": "Ministry of Agriculture & Farmers Welfare"
+    },
+    {
+        "email": "startup@example.com",
+        "username": "startup_demo",
+        "password": "password123",
+        "full_name": "Innovator Founder",
+        "role": models.UserRole.STARTUP,
+        "organization": "KrishiAI Tech Labs Pvt Ltd"
+    },
+    {
+        "email": "eval@example.com",
+        "username": "eval_demo",
+        "password": "password123",
+        "full_name": "Expert Evaluator",
+        "role": models.UserRole.EVALUATOR,
+        "organization": "Evaluation Board"
+    },
+    {
+        "email": "admin@example.com",
+        "username": "admin_demo",
+        "password": "password123",
+        "full_name": "System Admin",
+        "role": models.UserRole.ADMIN,
+        "organization": "GoPilot-X Operations"
     }
 ]
 
