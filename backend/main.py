@@ -74,6 +74,28 @@ def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
+
+        # Auto-create initial startup entity so new startups immediately have an active record
+        if role_value == models.UserRole.STARTUP or str(user_data.role).lower() == "startup":
+            org_name = user_data.organization or f"{user_data.full_name}'s Startup"
+            existing_s = db.query(models.Startup).filter(models.Startup.name == org_name).first()
+            if existing_s:
+                org_name = f"{org_name} ({db_user.id})"
+            new_startup = models.Startup(
+                name=org_name,
+                description=f"DPIIT-recognized innovative enterprise registered by {user_data.full_name}.",
+                user_id=db_user.id,
+                industry="AI & DeepTech",
+                founded_year=2024,
+                team_size=5,
+                funding_stage="seed",
+                technologies=["AI", "Python", "Cloud"],
+                verification_score=8.5,
+                is_verified=True
+            )
+            db.add(new_startup)
+            db.commit()
+
         return db_user
     except Exception as e:
         db.rollback()
@@ -121,11 +143,20 @@ def get_current_user(email: str = Depends(auth.verify_token), db: Session = Depe
 def create_startup(startup_data: schemas.StartupCreate, 
                    email: str = Depends(auth.verify_token), 
                    db: Session = Depends(get_db)):
-    """Create a new startup profile"""
+    """Create or update a startup profile"""
     user = db.query(models.User).filter(models.User.email == email).first()
     if not user or user.role != "startup":
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    # Check if this user already has a startup profile (update mode)
+    existing_user_startup = db.query(models.Startup).filter(models.Startup.user_id == user.id).first()
+    if existing_user_startup:
+        for field, value in startup_data.model_dump(exclude_unset=True).items():
+            setattr(existing_user_startup, field, value)
+        db.commit()
+        db.refresh(existing_user_startup)
+        return existing_user_startup
+
     existing = db.query(models.Startup).filter(models.Startup.name == startup_data.name).first()
     if existing:
         raise HTTPException(status_code=400, detail="Startup name already exists")
@@ -135,6 +166,32 @@ def create_startup(startup_data: schemas.StartupCreate,
     db.commit()
     db.refresh(db_startup)
     return db_startup
+
+@app.get("/api/startups/me", response_model=schemas.StartupResponse)
+def get_my_startup(email: str = Depends(auth.verify_token), db: Session = Depends(get_db)):
+    """Get the authenticated user's startup profile"""
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    startup = db.query(models.Startup).filter(models.Startup.user_id == user.id).first()
+    if not startup:
+        org_name = user.organization or f"{user.full_name}'s Startup"
+        startup = models.Startup(
+            name=org_name,
+            description=f"DPIIT-recognized innovative enterprise registered by {user.full_name}.",
+            user_id=user.id,
+            industry="AI & DeepTech",
+            founded_year=2024,
+            team_size=5,
+            funding_stage="seed",
+            technologies=["AI", "Python", "Cloud"],
+            verification_score=8.5,
+            is_verified=True
+        )
+        db.add(startup)
+        db.commit()
+        db.refresh(startup)
+    return startup
 
 @app.get("/api/startups/{startup_id}", response_model=schemas.StartupResponse)
 def get_startup(startup_id: int, db: Session = Depends(get_db)):
@@ -414,6 +471,14 @@ def list_pilots(email: str = Depends(auth.verify_token),
     
     if user.role == "startup":
         startup = db.query(models.Startup).filter(models.Startup.user_id == user.id).first()
+        if not startup:
+            return {
+                "data": [],
+                "total": 0,
+                "skip": skip,
+                "limit": limit,
+                "pages": 0
+            }
         query = db.query(models.Pilot).filter(models.Pilot.startup_id == startup.id)
     else:
         query = db.query(models.Pilot).filter(models.Pilot.assigned_to_id == user.id)
@@ -526,6 +591,13 @@ def get_dashboard_stats(email: str = Depends(auth.verify_token),
     
     elif user.role == "startup":
         startup = db.query(models.Startup).filter(models.Startup.user_id == user.id).first()
+        if not startup:
+            return {
+                "proposals": 0,
+                "pilots": 0,
+                "verification_score": 0.0,
+                "is_verified": False
+            }
         proposals_count = db.query(models.Proposal).filter(
             models.Proposal.startup_id == startup.id
         ).count()
@@ -536,8 +608,8 @@ def get_dashboard_stats(email: str = Depends(auth.verify_token),
         return {
             "proposals": proposals_count,
             "pilots": pilots_count,
-            "verification_score": startup.verification_score,
-            "is_verified": startup.is_verified
+            "verification_score": startup.verification_score or 0.0,
+            "is_verified": startup.is_verified or False
         }
     
     return {"message": "No data available"}

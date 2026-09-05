@@ -20,9 +20,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, requireAuth = true }) 
     }
 
     if (apiClient.getToken()) {
-      getCurrentUser().catch(() => router.replace('/auth/login'));
+      getCurrentUser().catch(() => router.replace('/?auth=signin'));
     } else {
-      router.replace('/auth/login');
+      router.replace('/?auth=signin');
     }
   }, [user, isLoading, requireAuth, router, getCurrentUser]);
 
@@ -40,7 +40,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, requireAuth = true }) 
     );
   }
 
-  if (requireAuth && !isAuthenticated && !router.pathname.startsWith('/auth')) {
+  if (requireAuth && !isAuthenticated) {
     return null;
   }
 
