@@ -199,6 +199,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def root():
+    """Root endpoint for platform health and metadata"""
+    return {
+        "status": "ok",
+        "platform": "GoPilot-X BHARAT Procurement Engine (SIH26136)",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/api/health"
+    }
+
 # ==================== AUTHENTICATION ROUTES ====================
 
 @app.post("/api/auth/register", response_model=schemas.UserResponse)

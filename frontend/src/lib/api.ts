@@ -250,8 +250,8 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { AuthResponse } from '@/types';
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = rawApiUrl.replace(/\/+$/, '').replace(/\/api$/, '');
 
 class APIClient {
   private client: AxiosInstance;
