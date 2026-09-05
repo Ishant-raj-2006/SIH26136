@@ -2,9 +2,9 @@ from fastapi import FastAPI, Depends, HTTPException, status, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
-from datetime import timedelta
+from datetime import datetime, timedelta
 import models, schemas, auth
-from database import database_target, get_db, init_db
+from database import database_target, get_db, init_db, SessionLocal
 from typing import List, Optional
 import math
 import os
@@ -14,11 +14,163 @@ load_dotenv()
 
 app = FastAPI(title="Startup Procurement Platform", version="1.0.0")
 
+def seed_default_data():
+    """Auto-seed demo users and sample sandbox challenges if not already present"""
+    db = SessionLocal()
+    try:
+        demo_users = [
+            {
+                "email": "government@procurement.com",
+                "username": "government_user",
+                "password": "Government@123",
+                "full_name": "Government Procurement Officer",
+                "role": models.UserRole.DEPARTMENT,
+                "organization": "Ministry of Electronics & IT (MeitY)",
+            },
+            {
+                "email": "startup@procurement.com",
+                "username": "startup_user",
+                "password": "Startup@123",
+                "full_name": "Aarav Sharma",
+                "role": models.UserRole.STARTUP,
+                "organization": "AeroShield Robotics Pvt Ltd",
+            },
+            {
+                "email": "admin@procurement.com",
+                "username": "admin",
+                "password": "Admin@123",
+                "full_name": "Platform Administrator",
+                "role": models.UserRole.ADMIN,
+                "organization": "National Procurement Governance",
+            },
+            {
+                "email": "evaluator@procurement.com",
+                "username": "evaluator",
+                "password": "Eval@123",
+                "full_name": "Dr. R. K. Verma",
+                "role": models.UserRole.EVALUATOR,
+                "organization": "Expert Evaluation Committee",
+            },
+            {
+                "email": "dept@example.com",
+                "username": "dept_demo",
+                "password": "password123",
+                "full_name": "Dept Officer",
+                "role": models.UserRole.DEPARTMENT,
+                "organization": "Department of Agriculture & Farmers Welfare",
+            },
+            {
+                "email": "startup@example.com",
+                "username": "startup_demo",
+                "password": "password123",
+                "full_name": "Innovator Founder",
+                "role": models.UserRole.STARTUP,
+                "organization": "KrishiAI Tech Labs Pvt Ltd",
+            },
+            {
+                "email": "eval@example.com",
+                "username": "eval_demo",
+                "password": "password123",
+                "full_name": "Expert Evaluator",
+                "role": models.UserRole.EVALUATOR,
+                "organization": "ICAR Evaluation Panel",
+            },
+            {
+                "email": "admin@example.com",
+                "username": "admin_demo",
+                "password": "password123",
+                "full_name": "System Admin",
+                "role": models.UserRole.ADMIN,
+                "organization": "GoPilot-X Operations",
+            },
+        ]
+
+        for u in demo_users:
+            existing = db.query(models.User).filter(models.User.email == u["email"]).first()
+            if not existing:
+                user = models.User(
+                    email=u["email"],
+                    username=u["username"],
+                    hashed_password=auth.get_password_hash(u["password"]),
+                    full_name=u["full_name"],
+                    role=u["role"],
+                    organization=u["organization"],
+                    is_verified=True,
+                )
+                db.add(user)
+                db.commit()
+                db.refresh(user)
+                target_user = user
+                print(f"[SEED] Created demo user: {u['email']}")
+            else:
+                existing.hashed_password = auth.get_password_hash(u["password"])
+                existing.is_verified = True
+                db.commit()
+                target_user = existing
+
+            if u["role"] == models.UserRole.STARTUP:
+                startup = db.query(models.Startup).filter(models.Startup.user_id == target_user.id).first()
+                if not startup:
+                    new_startup = models.Startup(
+                        name=u["organization"],
+                        description="DPIIT recognized innovative startup specializing in edge diagnostics and autonomous tech.",
+                        user_id=target_user.id,
+                        industry="AI & DeepTech",
+                        founded_year=2021,
+                        team_size=12,
+                        funding_stage="seed",
+                        technologies=["Computer Vision", "Edge AI", "PyTorch", "Rust"],
+                        verification_score=9.2,
+                        is_verified=True,
+                    )
+                    db.add(new_startup)
+                    db.commit()
+
+        # Seed sample challenge if challenges table is empty
+        challenge_count = db.query(models.Challenge).count()
+        if challenge_count == 0:
+            dept_user = db.query(models.User).filter(models.User.role == models.UserRole.DEPARTMENT).first()
+            if dept_user:
+                challenge1 = models.Challenge(
+                    title="AI-Powered Crop Disease Diagnostic & Precision Yield Prediction",
+                    description="A national public procurement sandbox challenge under GFR Rule 194 to deploy real-time edge diagnostic systems in 12 farm clusters.",
+                    problem_statement="Field-level extension officers lack automated diagnostic devices for bacterial leaf blight and rust. Startups are invited to deploy hyperspectral edge models across designated district testbeds.",
+                    budget=2500000,
+                    status="open",
+                    category="AgriTech & AI",
+                    tags=["AI/ML", "Computer Vision", "Edge Computing", "AgriStack", "GFR 194"],
+                    deadline=datetime.utcnow() + timedelta(days=30),
+                    expected_outcome="Autonomous edge app with >92% diagnostic accuracy validated across 5,000 test hectares.",
+                    creator_id=dept_user.id,
+                )
+                challenge2 = models.Challenge(
+                    title="Decentralized Water Purity & Heavy Metal IoT Telemetry",
+                    description="Real-time multi-parameter water telemetry network for rural drinking supply piped clusters under Jal Jeevan Mission.",
+                    problem_statement="District laboratories suffer 5-7 day turnarounds for arsenic, nitrate, and heavy metal testing. Real-time optical or spectroscopic sensing nodes required.",
+                    budget=3500000,
+                    status="open",
+                    category="CleanTech & IoT",
+                    tags=["IoT", "Spectroscopy", "Water Quality", "Edge Sensors"],
+                    deadline=datetime.utcnow() + timedelta(days=45),
+                    expected_outcome="Sub-ppb detection limit with continuous 4G/NB-IoT telemetry to state dashboard.",
+                    creator_id=dept_user.id,
+                )
+                db.add(challenge1)
+                db.add(challenge2)
+                db.commit()
+                print("[SEED] Created initial sample sandbox challenges")
+    except Exception as e:
+        print(f"[SEED] Notice: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
 @app.on_event("startup")
 async def startup_event():
     """Runs on server start — initializes DB and prints status banner"""
     try:
         init_db()
+        seed_default_data()
     except RuntimeError as error:
         print(f"[DB] ERROR: {error}")
         raise
@@ -622,5 +774,7 @@ def health_check():
     return {"status": "ok", "message": "Startup Procurement Platform API is running"}
 
 if __name__ == "__main__":
+    import os
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
