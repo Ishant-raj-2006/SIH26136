@@ -115,7 +115,7 @@ git push origin feature-branch
 | Frontend | 3000 | http://localhost:3000 |
 | Backend | 8000 | http://localhost:8000 |
 | API Docs | 8000/docs | http://localhost:8000/docs |
-| Database | N/A | procurement.db (SQLite) |
+| Database | Neon | PostgreSQL via pooled `DATABASE_URL` |
 
 ---
 
@@ -123,7 +123,7 @@ git push origin feature-branch
 
 ### Backend (.env)
 ```env
-DATABASE_URL=sqlite:///./procurement.db
+DATABASE_URL=postgresql+psycopg://USER:PASSWORD@YOUR-NEON-HOST/DBNAME?sslmode=require
 SECRET_KEY=your-secret-key-here
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30

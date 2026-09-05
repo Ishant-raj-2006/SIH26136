@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: #f6f3ed;
+}
+
+body {
+  @apply text-slate-900 transition-colors duration-300;
+  background: radial-gradient(circle at 8% 0%, rgba(232, 135, 47, 0.1), transparent 28rem), #f6f3ed;
+  color: #1f2925;
+  font-family: 'Avenir Next', 'Trebuchet MS', sans-serif;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #1f2925;
+  font-family: Georgia, 'Times New Roman', serif;
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: #e8872f;
+  color: #fffdf8;
+}
+
+/* Skeleton Loading Animation */
+.skeleton {
+  @apply animate-pulse rounded bg-stone-200;
+}
+
+.skeleton-text {
+  @apply h-4 rounded bg-stone-200;
+}
+
+.skeleton-circle {
+  @apply w-12 h-12 bg-slate-200 dark:bg-slate-800 rounded-full;
+}
+
+/* Smooth fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ebe6dc;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-stone-400 hover:bg-stone-500;
+}
+
+/* Focus States */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-stone-50;
+}
+
+/* Transitions */
+.transition-smooth {
+  @apply transition-all duration-200 ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
