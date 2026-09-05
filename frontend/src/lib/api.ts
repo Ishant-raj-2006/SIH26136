@@ -250,8 +250,18 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { AuthResponse } from '@/types';
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-const API_URL = rawApiUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+function getBaseApiUrl(): string {
+  let url = (process.env.NEXT_PUBLIC_API_URL || '').trim();
+  if (!url || url === 'NEXT_PUBLIC_API_URL') {
+    return 'http://localhost:8000';
+  }
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`;
+  }
+  return url.replace(/\/+$/, '').replace(/\/api$/, '');
+}
+
+const API_URL = getBaseApiUrl();
 
 class APIClient {
   private client: AxiosInstance;
