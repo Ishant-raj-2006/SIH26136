@@ -566,9 +566,9 @@ frontend/
 - Great for data validation
 - JSON schema support
 
-**Database: SQLAlchemy + SQLite**
-- Easy to set up (SQLite)
-- Easy migration to PostgreSQL/MySQL
+**Database: Neon PostgreSQL + SQLAlchemy**
+- Serverless PostgreSQL with pooled connections
+- Current `psycopg` v3 driver
 - Type-safe queries
 - Relationship management
 - Works with most databases
