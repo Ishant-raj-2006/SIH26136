@@ -105,7 +105,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
     setIsLoading(true);
 
     try {
-      await login(signInEmail, signInPassword);
+      await login(signInEmail.trim(), signInPassword.trim());
       toast.success('Sign in successful! Entering workspace...');
       onClose();
       router.push('/dashboard');
