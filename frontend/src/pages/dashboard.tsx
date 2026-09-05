@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
-  TrendingUp, Award, Target, Users, BookOpen, Plus, ArrowRight,
+  TrendingUp, Plus, ArrowRight, MessagesSquare,
   CheckSquare, Clock, DollarSign, ShieldCheck, Rocket,
-  ClipboardList, FlaskConical, AlertCircle, BarChart2, Star,
+  ClipboardList, FlaskConical, AlertCircle, BarChart2, Star, Target,
 } from 'lucide-react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,

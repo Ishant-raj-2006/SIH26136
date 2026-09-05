@@ -108,7 +108,7 @@ export const Header: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    router.push('/auth/login');
+    router.push('/?auth=signin');
   };
 
   const handleNotifClick = useCallback(
@@ -133,11 +133,11 @@ export const Header: React.FC = () => {
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </Button>
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-secondary-600 rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-sm">SP</span>
+            <div className="w-8 h-8 bg-blue-900 rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-xs tracking-wider">GX</span>
             </div>
             <span className="hidden sm:inline font-bold text-lg text-slate-900 dark:text-slate-50 tracking-tight">
-              StartupHub
+              GoPilot-X
             </span>
           </Link>
         </div>

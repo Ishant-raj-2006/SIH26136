@@ -292,7 +292,7 @@ class APIClient {
           this.clearToken();
 
           if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
-            window.location.href = '/auth/login';
+            window.location.href = '/?auth=signin';
           }
         }
 
@@ -317,7 +317,7 @@ class APIClient {
     this.clearToken();
 
     if (typeof window !== 'undefined') {
-      window.location.href = '/auth/login';
+      window.location.href = '/?auth=signin';
     }
   }
 
