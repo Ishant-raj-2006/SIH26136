@@ -452,14 +452,89 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
         {/* Left Column: Problem Details */}
         <div className="lg:col-span-2 space-y-6">
           {/* Problem Statement Section */}
-          <Card className="p-6 sm:p-7 space-y-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <FileText className="w-5 h-5 text-primary-600" />
-              Detailed Problem Statement
-            </h2>
+          <Card className="p-6 sm:p-7 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary-600" />
+                Detailed Problem Statement
+              </h2>
+              <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                {challenge.problem_code || `PRB-SIH26136-${challenge.id}`}
+              </span>
+            </div>
+
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line text-sm sm:text-base">
               {challenge.problem_statement}
             </p>
+
+            {/* Target Beneficiaries & Technical Requirements Badges */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-emerald-500" />
+                  Target Beneficiaries
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {(challenge.target_beneficiaries && challenge.target_beneficiaries.length > 0
+                    ? challenge.target_beneficiaries
+                    : ['citizens', 'farmers']
+                  ).map((b, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 capitalize"
+                    >
+                      👥 {b.replace('_', ' ')}
+                    </span>
+                  ))}
+                  {challenge.target_beneficiaries_other && (
+                    <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/50 text-emerald-900 dark:text-emerald-200 border border-emerald-300">
+                      ✨ {challenge.target_beneficiaries_other}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-amber-500" />
+                  Technical Requirements
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {(challenge.technical_requirements && challenge.technical_requirements.length > 0
+                    ? challenge.technical_requirements
+                    : ['AI', 'IoT']
+                  ).map((t, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-mono"
+                    >
+                      💻 {t}
+                    </span>
+                  ))}
+                  {challenge.technical_requirements_other && (
+                    <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-100 dark:bg-amber-900/50 text-amber-900 dark:text-amber-200 border border-amber-300">
+                      ⚡ {challenge.technical_requirements_other}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Nodal Officer Contact Info */}
+            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 text-xs space-y-1.5">
+              <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Building2 className="w-4 h-4 text-primary-600" />
+                  Issuing Department: {challenge.department_or_ministry || 'Ministry of Electronics & IT'}
+                </span>
+                <span className="text-[10px] bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded">
+                  Verified Authority
+                </span>
+              </div>
+              <p className="text-slate-600 dark:text-slate-400">
+                Nodal Officer: <strong>{challenge.contact_person_name || 'Rajesh Kumar (Director)'}</strong> • Email: <a href={`mailto:${challenge.contact_email || 'officer@gov.in'}`} className="text-primary-600 underline">{challenge.contact_email || 'officer@gov.in'}</a> • Phone: {challenge.contact_phone || '+91 9876543210'}
+              </p>
+            </div>
           </Card>
 
           {/* Expected Deliverables & Milestones */}

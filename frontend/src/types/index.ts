@@ -31,12 +31,21 @@ export interface Challenge {
   description: string;
   problem_statement: string;
   budget: number;
-  status: 'open' | 'evaluating' | 'pilot_running' | 'completed' | 'cancelled';
+  status: string;
   category: string;
   tags: string[];
   deadline: string;
   expected_outcome: string;
   creator_id: number;
+  problem_code?: string;
+  department_or_ministry?: string;
+  contact_person_name?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  target_beneficiaries?: string[];
+  target_beneficiaries_other?: string;
+  technical_requirements?: string[];
+  technical_requirements_other?: string;
   created_at: string;
 }
 

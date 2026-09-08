@@ -694,16 +694,50 @@ def update_startup_status(
 def create_challenge(challenge_data: schemas.ChallengeCreate,
                      email: str = Depends(auth.verify_token),
                      db: Session = Depends(get_db)):
-    """Create a new challenge"""
+    """Create a new challenge for Department / Ministry"""
     user = db.query(models.User).filter(models.User.email == email).first()
-    if not user or user.role != "department":
-        raise HTTPException(status_code=403, detail="Only departments can create challenges")
+    if not user or user.role not in [models.UserRole.DEPARTMENT, models.UserRole.ADMIN, "department", "admin"]:
+        raise HTTPException(status_code=403, detail="Only department officers or admins can post challenges")
     
-    db_challenge = models.Challenge(**challenge_data.model_dump(), creator_id=user.id)
+    # Unique Problem ID check
+    p_code = challenge_data.problem_code
+    if p_code and p_code.strip():
+        p_code = p_code.strip().upper()
+        existing = db.query(models.Challenge).filter(models.Challenge.problem_code == p_code).first()
+        if existing:
+            raise HTTPException(status_code=400, detail=f"Problem ID '{p_code}' already exists! Problem ID must be unique.")
+    else:
+        # Auto-generate unique Problem ID
+        import random
+        p_code = f"PRB-SIH26136-{random.randint(100, 999)}"
+        while db.query(models.Challenge).filter(models.Challenge.problem_code == p_code).first():
+            p_code = f"PRB-SIH26136-{random.randint(100, 999)}"
+
+    c_dict = challenge_data.model_dump()
+    c_dict["problem_code"] = p_code
+    if not c_dict.get("department_or_ministry"):
+        c_dict["department_or_ministry"] = user.organization or "Ministry of Electronics & IT"
+    if not c_dict.get("contact_person_name"):
+        c_dict["contact_person_name"] = user.full_name or "Department Officer"
+    if not c_dict.get("contact_email"):
+        c_dict["contact_email"] = user.email
+
+    db_challenge = models.Challenge(**c_dict, creator_id=user.id)
     db.add(db_challenge)
     db.commit()
     db.refresh(db_challenge)
     return db_challenge
+
+@app.get("/api/challenges/my", response_model=dict)
+def get_my_challenges(email: str = Depends(auth.verify_token), db: Session = Depends(get_db)):
+    """Get all challenges created by the logged-in officer/department"""
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    challenges = db.query(models.Challenge).filter(models.Challenge.creator_id == user.id).order_by(models.Challenge.id.desc()).all()
+    serialized = [schemas.ChallengeResponse.model_validate(c).model_dump() for c in challenges]
+    return {"data": serialized, "total": len(serialized)}
 
 @app.get("/api/challenges/{challenge_id}", response_model=schemas.ChallengeResponse)
 def get_challenge(challenge_id: int, db: Session = Depends(get_db)):
@@ -723,7 +757,6 @@ def list_challenges(skip: int = Query(0), limit: int = Query(10),
     query = db.query(models.Challenge)
     
     if status and status.strip():
-        # Case-insensitive match for status (e.g. 'open' vs 'OPEN')
         query = query.filter(models.Challenge.status.ilike(f"%{status.strip()}%"))
     if category and category.strip():
         query = query.filter(models.Challenge.category.ilike(f"%{category.strip()}%"))

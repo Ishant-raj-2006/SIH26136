@@ -132,6 +132,15 @@ class ChallengeCreate(BaseModel):
     tags: List[str]
     deadline: datetime
     expected_outcome: str
+    problem_code: Optional[str] = None
+    department_or_ministry: Optional[str] = None
+    contact_person_name: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    target_beneficiaries: Optional[List[str]] = []
+    target_beneficiaries_other: Optional[str] = None
+    technical_requirements: Optional[List[str]] = []
+    technical_requirements_other: Optional[str] = None
 
 class ChallengeUpdate(BaseModel):
     title: Optional[str] = None
@@ -142,6 +151,15 @@ class ChallengeUpdate(BaseModel):
     category: Optional[str] = None
     tags: Optional[List[str]] = None
     expected_outcome: Optional[str] = None
+    problem_code: Optional[str] = None
+    department_or_ministry: Optional[str] = None
+    contact_person_name: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    target_beneficiaries: Optional[List[str]] = None
+    target_beneficiaries_other: Optional[str] = None
+    technical_requirements: Optional[List[str]] = None
+    technical_requirements_other: Optional[str] = None
 
 class ChallengeResponse(BaseModel):
     id: int
@@ -155,6 +173,15 @@ class ChallengeResponse(BaseModel):
     deadline: datetime
     expected_outcome: str
     creator_id: int
+    problem_code: Optional[str] = None
+    department_or_ministry: Optional[str] = None
+    contact_person_name: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    target_beneficiaries: Optional[List[str]] = []
+    target_beneficiaries_other: Optional[str] = None
+    technical_requirements: Optional[List[str]] = []
+    technical_requirements_other: Optional[str] = None
     created_at: datetime
     
     class Config:

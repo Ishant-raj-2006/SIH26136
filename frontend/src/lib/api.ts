@@ -504,6 +504,14 @@ class APIClient {
     return response.data;
   }
 
+  async getMyChallenges() {
+    const response = await this.client.get(
+      '/api/challenges/my'
+    );
+
+    return response.data;
+  }
+
   async listChallenges(
     skip: number = 0,
     limit: number = 10,

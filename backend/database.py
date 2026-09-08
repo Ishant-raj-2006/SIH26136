@@ -93,6 +93,23 @@ def init_db():
                         connection.execute(text(f"ALTER TABLE startups ADD COLUMN {col_name} {col_type}"))
                     except Exception:
                         pass
+                
+                challenge_cols = [
+                    ("problem_code", "VARCHAR"),
+                    ("department_or_ministry", "VARCHAR"),
+                    ("contact_person_name", "VARCHAR"),
+                    ("contact_phone", "VARCHAR"),
+                    ("contact_email", "VARCHAR"),
+                    ("target_beneficiaries", "JSON"),
+                    ("target_beneficiaries_other", "VARCHAR"),
+                    ("technical_requirements", "JSON"),
+                    ("technical_requirements_other", "VARCHAR")
+                ]
+                for col_name, col_type in challenge_cols:
+                    try:
+                        connection.execute(text(f"ALTER TABLE challenges ADD COLUMN {col_name} {col_type}"))
+                    except Exception:
+                        pass
     except SQLAlchemyError as error:
         raise RuntimeError(
             "Could not connect to Neon PostgreSQL. Check DATABASE_URL, the Neon branch, "
