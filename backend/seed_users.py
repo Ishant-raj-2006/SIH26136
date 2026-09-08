@@ -35,6 +35,14 @@ users = [
         "organization": "TechStart Inc"
     },
     {
+        "email": "company@procurement.com",
+        "username": "company_user",
+        "password": "Company@123",
+        "full_name": "Enterprise Corporate",
+        "role": models.UserRole.STARTUP,
+        "organization": "Acme DeepTech Pvt Ltd"
+    },
+    {
         "email": "evaluator@procurement.com",
         "username": "evaluator",
         "password": "Eval@123",

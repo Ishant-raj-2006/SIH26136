@@ -6,8 +6,8 @@ interface AppStore {
   // Challenges
   challenges: Challenge[];
   challengesLoading: boolean;
-  fetchChallenges: (skip?: number, limit?: number, status?: string) => Promise<void>;
-  
+  fetchChallenges: (skip?: number, limit?: number, status?: string, category?: string, creatorId?: number) => Promise<void>;
+
   // Startups
   startups: Startup[];
   startupsLoading: boolean;
@@ -40,10 +40,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
   // Challenges
   challenges: [],
   challengesLoading: false,
-  fetchChallenges: async (skip = 0, limit = 10, status?) => {
+  fetchChallenges: async (skip = 0, limit = 10, status?, category?, creatorId?) => {
     set({ challengesLoading: true });
     try {
-      const response = await apiClient.listChallenges(skip, limit, status);
+      const response = await apiClient.listChallenges(skip, limit, status, category, creatorId);
       set({ challenges: response.data, challengesLoading: false });
     } catch (error) {
       set({ challengesLoading: false, error: 'Failed to fetch challenges' });

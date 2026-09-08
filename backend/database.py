@@ -63,6 +63,36 @@ def init_db():
                     $$;
                 """))
             Base.metadata.create_all(bind=connection)
+            
+            # Safe auto-migration for SQLite to add new columns to existing startups table
+            if connection.dialect.name == "sqlite":
+                columns_to_add = [
+                    ("company_type", "VARCHAR DEFAULT 'startup'"),
+                    ("company_type_other", "VARCHAR"),
+                    ("headquarters_city", "VARCHAR"),
+                    ("state", "VARCHAR"),
+                    ("official_email", "VARCHAR"),
+                    ("contact_number", "VARCHAR"),
+                    ("founder_ceo_name", "VARCHAR"),
+                    ("auth_rep_name", "VARCHAR"),
+                    ("auth_rep_designation", "VARCHAR"),
+                    ("pan_number", "VARCHAR"),
+                    ("aadhaar_number", "VARCHAR"),
+                    ("work_description", "TEXT"),
+                    ("linkedin_url", "VARCHAR"),
+                    ("cin_number", "VARCHAR"),
+                    ("dpiit_number", "VARCHAR"),
+                    ("gst_number", "VARCHAR"),
+                    ("udyam_number", "VARCHAR"),
+                    ("incorporation_cert_url", "VARCHAR"),
+                    ("relevant_doc_url", "VARCHAR"),
+                    ("status", "VARCHAR DEFAULT 'pending'")
+                ]
+                for col_name, col_type in columns_to_add:
+                    try:
+                        connection.execute(text(f"ALTER TABLE startups ADD COLUMN {col_name} {col_type}"))
+                    except Exception:
+                        pass
     except SQLAlchemyError as error:
         raise RuntimeError(
             "Could not connect to Neon PostgreSQL. Check DATABASE_URL, the Neon branch, "

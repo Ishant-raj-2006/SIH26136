@@ -380,6 +380,28 @@ class APIClient {
     return response.data;
   }
 
+  async sendOTP(email: string, purpose: string = 'registration') {
+    const response = await this.client.post('/api/auth/send-otp', {
+      email,
+      purpose,
+    });
+    return response.data;
+  }
+
+  async verifyOTP(email: string, otp_code: string, purpose: string = 'registration') {
+    const response = await this.client.post('/api/auth/verify-otp', {
+      email,
+      otp_code,
+      purpose,
+    });
+    return response.data;
+  }
+
+  async resetPassword(data: { email: string; otp_code: string; new_password: string }) {
+    const response = await this.client.post('/api/auth/reset-password', data);
+    return response.data;
+  }
+
   // =========================
   // Startup endpoints
   // =========================
@@ -432,6 +454,35 @@ class APIClient {
     return response.data;
   }
 
+  async getMyStartup() {
+    const response = await this.client.get('/api/startups/me');
+    return response.data;
+  }
+
+  async uploadFile(file: File, fileType: string = 'certificate') {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('file_type', fileType);
+    const response = await this.client.post('/api/upload/file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
+  async registerCompany(data: any) {
+    const response = await this.client.post('/api/company/register', data);
+    return response.data;
+  }
+
+  async updateStartupStatus(startupId: number, statusStr: string) {
+    const response = await this.client.put(`/api/startups/${startupId}/status`, null, {
+      params: { status_str: statusStr }
+    });
+    return response.data;
+  }
+
   // =========================
   // Challenge endpoints
   // =========================
@@ -457,7 +508,8 @@ class APIClient {
     skip: number = 0,
     limit: number = 10,
     status?: string,
-    category?: string
+    category?: string,
+    creator_id?: number
   ) {
     const params: Record<string, any> = {
       skip,
@@ -472,6 +524,10 @@ class APIClient {
       params['category'] = category;
     }
 
+    if (creator_id !== undefined) {
+      params['creator_id'] = creator_id;
+    }
+
     const response = await this.client.get(
       '/api/challenges',
       { params }
@@ -484,6 +540,14 @@ class APIClient {
     const response = await this.client.put(
       `/api/challenges/${id}`,
       data
+    );
+
+    return response.data;
+  }
+
+  async deleteChallenge(id: number) {
+    const response = await this.client.delete(
+      `/api/challenges/${id}`
     );
 
     return response.data;

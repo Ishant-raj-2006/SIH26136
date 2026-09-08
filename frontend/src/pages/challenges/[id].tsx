@@ -5,12 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Calendar, DollarSign, Tag, ShieldCheck, CheckCircle2,
   Clock, Send, Building2, FileText, Sparkles, AlertCircle, Award,
-  Users, Layers, Share2, Check, Copy
+  Users, Layers, Share2, Check, Copy, Edit3, Trash2
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { useAuthStore } from '@/lib/stores/auth';
 import { Layout } from '@/components/Layout';
-import { Card, Button, Input, Textarea, Badge } from '@/components/UI';
+import { Card, Button, Input, Textarea, Badge, Select } from '@/components/UI';
 import toast from 'react-hot-toast';
 import type { Challenge, Proposal } from '@/types';
 import type { NextPageWithLayout } from '../_app';
@@ -32,9 +32,66 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
+  // Edit Challenge modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [updatingChallenge, setUpdatingChallenge] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: '',
+    category: '',
+    budget: 0,
+    status: 'open',
+    description: '',
+    problem_statement: '',
+    expected_outcome: '',
+    tagsStr: '',
+  });
+
+  // Delete Challenge modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [confirmBudget, setConfirmBudget] = useState('');
+  const [confirmChoice, setConfirmChoice] = useState<'yes' | 'no' | ''>('');
+  const [deletingLoading, setDeletingLoading] = useState(false);
+
   // Proposal modal state
   const [proposalModalOpen, setProposalModalOpen] = useState(false);
+  const [startupProfile, setStartupProfile] = useState<any | null>(null);
+  const [startupStatus, setStartupStatus] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user?.role === 'startup') {
+      apiClient.getMyStartup()
+        .then((data) => {
+          setStartupProfile(data);
+          setStartupStatus(data.status || 'pending');
+        })
+        .catch(() => setStartupStatus('pending'));
+    }
+  }, [user?.role]);
+
+  const handleOpenProposalModal = () => {
+    // Check if user has completed full 3-step company registration
+    const isRegistrationComplete = Boolean(startupProfile?.cin_number && startupProfile?.incorporation_cert_url);
+
+    if (!isRegistrationComplete) {
+      toast.error('Registration required! Redirecting to 3-Step Company Registration...', { duration: 4000 });
+      router.push('/register/company');
+      return;
+    }
+
+    const companyName = startupProfile?.name || user?.organization || 'Our Enterprise';
+    const companyWebsite = startupProfile?.website || 'https://company.example.com';
+
+    setProposalForm({
+      title: `Technical Proposal & Acceptance by ${companyName}`,
+      description: `I, on behalf of ${companyName} (${companyWebsite}), officially accept this government proposal for "${challenge?.title}". We hereby submit our technical solution under GFR Rule 194.`,
+      technical_approach: `Company Entity: ${companyName}\nOfficial Website: ${companyWebsite}\n\nWe hereby confirm acceptance of this government procurement challenge. Our team offers a complete technology solution with full GFR 194 and DPIIT compliance.`,
+      timeline: '60 days (3 Escrow Tranches)',
+      cost: Number(challenge?.budget || 1500000),
+    });
+
+    setProposalModalOpen(true);
+  };
   const [proposalForm, setProposalForm] = useState({
     title: '',
     description: '',
@@ -109,6 +166,93 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
     }
   };
 
+  const openEditModal = () => {
+    if (!challenge) return;
+    setEditForm({
+      title: challenge.title || '',
+      category: challenge.category || 'AgriTech & AI',
+      budget: challenge.budget || 0,
+      status: challenge.status || 'open',
+      description: challenge.description || '',
+      problem_statement: challenge.problem_statement || '',
+      expected_outcome: challenge.expected_outcome || '',
+      tagsStr: challenge.tags ? challenge.tags.join(', ') : '',
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleUpdateChallenge = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!challenge) return;
+
+    setUpdatingChallenge(true);
+    try {
+      const tagsArray = editForm.tagsStr
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      const updated = await apiClient.updateChallenge(challenge.id, {
+        title: editForm.title,
+        category: editForm.category,
+        budget: Number(editForm.budget),
+        status: editForm.status,
+        description: editForm.description,
+        problem_statement: editForm.problem_statement,
+        expected_outcome: editForm.expected_outcome,
+        tags: tagsArray,
+      });
+
+      setChallenge({ ...challenge, ...updated });
+      toast.success('Challenge updated successfully!');
+      setEditModalOpen(false);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.detail || 'Failed to update challenge');
+    } finally {
+      setUpdatingChallenge(false);
+    }
+  };
+
+  const openDeleteModal = () => {
+    setConfirmBudget('');
+    setConfirmChoice('');
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!challenge) return;
+
+    // Strict Rule 1: Check Budget
+    const entered = Number(confirmBudget);
+    const actual = Number(challenge.budget);
+
+    if (isNaN(entered) || entered !== actual) {
+      toast.error(`Wrong Budget entered (₹${confirmBudget})! Deletion rejected.`);
+      return;
+    }
+
+    // Strict Rule 2: Check Confirmation Choice
+    if (confirmChoice !== 'yes') {
+      toast.error('Deletion cancelled! You selected "No" or did not confirm.');
+      return;
+    }
+
+    setDeletingLoading(true);
+    try {
+      await apiClient.deleteChallenge(challenge.id);
+      toast.success('Challenge deleted successfully!');
+      setDeleteModalOpen(false);
+      router.push('/challenges');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.detail || 'Failed to delete challenge');
+    } finally {
+      setDeletingLoading(false);
+    }
+  };
+
   const handleSubmitProposal = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!challenge) return;
@@ -127,14 +271,24 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
         technical_approach: proposalForm.technical_approach,
         timeline: proposalForm.timeline,
         cost: Number(proposalForm.cost),
+        risk_mitigation: 'Standard GFR 194 sandbox risk mitigation and data isolation compliance.'
       });
 
       toast.success('Proposal submitted successfully! Redirecting to Proposals tracker...');
       setProposalModalOpen(false);
       router.push('/proposals');
     } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.detail || 'Failed to submit proposal. Please try again.');
+      console.error('Proposal submission error:', err);
+      const rawDetail = err.response?.data?.detail;
+      let errorMsg = 'Failed to submit proposal. Please try again.';
+      if (typeof rawDetail === 'string') {
+        errorMsg = rawDetail;
+      } else if (Array.isArray(rawDetail)) {
+        errorMsg = rawDetail.map((item: any) => item.msg || JSON.stringify(item)).join(', ');
+      } else if (rawDetail && typeof rawDetail === 'object') {
+        errorMsg = JSON.stringify(rawDetail);
+      }
+      toast.error(errorMsg);
     } finally {
       setSubmitting(false);
     }
@@ -163,6 +317,8 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
     );
   }
 
+  const canEdit = user && (user.id === challenge.creator_id || user.role === 'department' || user.role === 'admin');
+
   return (
     <div className="space-y-8 pb-12">
       {/* Top Breadcrumb & Action bar */}
@@ -181,8 +337,31 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
             {copied ? 'Copied' : 'Share'}
           </Button>
 
+          {canEdit && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openEditModal}
+                className="bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-100"
+              >
+                <Edit3 className="w-4 h-4 mr-1.5" />
+                Edit Challenge ✏️
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openDeleteModal}
+                className="bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-300 border-red-300 dark:border-red-800 hover:bg-red-100"
+              >
+                <Trash2 className="w-4 h-4 mr-1.5" />
+                Delete 🗑️
+              </Button>
+            </div>
+          )}
+
           {user?.role === 'startup' && (
-            <Button variant="primary" size="md" onClick={() => setProposalModalOpen(true)}>
+            <Button variant="primary" size="md" onClick={handleOpenProposalModal}>
               <Send className="w-4 h-4 mr-2" />
               Apply / Submit Proposal
             </Button>
@@ -398,10 +577,10 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
                 variant="primary"
                 size="lg"
                 className="w-full justify-center shadow-lg shadow-primary-500/20"
-                onClick={() => setProposalModalOpen(true)}
+                onClick={handleOpenProposalModal}
               >
                 <Send className="w-4 h-4 mr-2" />
-                Apply Now
+                Apply / Submit Proposal
               </Button>
             </Card>
           ) : !user ? (
@@ -499,6 +678,25 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
               </div>
 
               <form onSubmit={handleSubmitProposal} className="space-y-4">
+                {/* Official Acceptance & Entity Info Banner */}
+                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs space-y-1.5">
+                  <div className="flex items-center justify-between font-bold text-emerald-400">
+                    <span className="flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-emerald-400" />
+                      Submitting Entity: {startupProfile?.name || user?.organization || 'Registered Enterprise'}
+                    </span>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/40">
+                      Approved Entity
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-300">
+                    🌐 Company Website: <a href={startupProfile?.website} target="_blank" rel="noreferrer" className="text-emerald-400 font-mono underline">{startupProfile?.website || 'https://company.example.com'}</a>
+                  </p>
+                  <p className="text-[11px] text-emerald-300 font-medium italic pt-1 border-t border-emerald-500/20">
+                    "I, on behalf of {startupProfile?.name || 'our company'} ({startupProfile?.website || 'website'}), officially accept this proposal for government evaluation under GFR Rule 194."
+                  </p>
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
                     Proposal Title *
@@ -574,6 +772,264 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
                     disabled={submitting}
                   >
                     {submitting ? 'Submitting to Ministry...' : 'Confirm & Submit Proposal'}
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Challenge Modal */}
+      <AnimatePresence>
+        {editModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6"
+            >
+              <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Edit3 className="w-5 h-5 text-amber-600" />
+                    Edit Challenge Details ✏️
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Modifying Challenge ID: <span className="font-semibold text-slate-700 dark:text-slate-300">PS-SIH26136-CH{challenge.id}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => setEditModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg font-bold p-1"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateChallenge} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    Challenge Title *
+                  </label>
+                  <Input
+                    value={editForm.title}
+                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                      Category *
+                    </label>
+                    <Input
+                      value={editForm.category}
+                      onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                      Grant Budget (₹) *
+                    </label>
+                    <Input
+                      type="number"
+                      value={editForm.budget}
+                      onChange={(e) => setEditForm({ ...editForm, budget: Number(e.target.value) })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                      Status *
+                    </label>
+                    <Select
+                      options={[
+                        { label: 'Open', value: 'open' },
+                        { label: 'Evaluating', value: 'evaluating' },
+                        { label: 'Pilot Running', value: 'pilot_running' },
+                        { label: 'Completed', value: 'completed' },
+                        { label: 'Cancelled', value: 'cancelled' },
+                      ]}
+                      value={editForm.status}
+                      onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    Brief Overview Description *
+                  </label>
+                  <Textarea
+                    rows={3}
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    Detailed Problem Statement *
+                  </label>
+                  <Textarea
+                    rows={4}
+                    value={editForm.problem_statement}
+                    onChange={(e) => setEditForm({ ...editForm, problem_statement: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    Expected Sandbox Outcome *
+                  </label>
+                  <Textarea
+                    rows={3}
+                    value={editForm.expected_outcome}
+                    onChange={(e) => setEditForm({ ...editForm, expected_outcome: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    Tags (Comma-separated)
+                  </label>
+                  <Input
+                    placeholder="e.g. AI/ML, Edge Computing, GFR 194"
+                    value={editForm.tagsStr}
+                    onChange={(e) => setEditForm({ ...editForm, tagsStr: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setEditModalOpen(false)}
+                    disabled={updatingChallenge}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={updatingChallenge}
+                  >
+                    {updatingChallenge ? 'Saving Changes...' : 'Save Changes 💾'}
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Strict Delete Challenge Confirmation Modal */}
+      <AnimatePresence>
+        {deleteModalOpen && challenge && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-lg w-full p-6 sm:p-8 space-y-6"
+            >
+              <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
+                    <Trash2 className="w-5 h-5" />
+                    Delete Challenge Confirmation ⚠️
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Deleting: <span className="font-semibold text-slate-700 dark:text-slate-300">{challenge.title}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => setDeleteModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg font-bold p-1"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleConfirmDelete} className="space-y-5">
+                <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-xs text-red-800 dark:text-red-300 space-y-1">
+                  <p className="font-bold">⚠️ Safety Verification Warning</p>
+                  <p>
+                    Please enter the exact Budget amount (₹) of this challenge and select "Yes". If either input is incorrect or "No" is chosen, the challenge will NOT be deleted.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                    1. Enter exact Challenge Budget (₹) *
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder={`Enter budget (Exact: ${challenge.budget})`}
+                    value={confirmBudget}
+                    onChange={(e) => setConfirmBudget(e.target.value)}
+                    required
+                  />
+                  <span className="text-[11px] text-slate-500">
+                    Challenge Grant Budget: ₹{challenge.budget.toLocaleString('en-IN')}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                    2. Confirm Permanent Deletion? *
+                  </label>
+                  <div className="flex items-center gap-6 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                    <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      <input
+                        type="radio"
+                        name="confirmChoiceDetail"
+                        value="yes"
+                        checked={confirmChoice === 'yes'}
+                        onChange={() => setConfirmChoice('yes')}
+                        className="w-4 h-4 text-red-600 focus:ring-red-500"
+                      />
+                      <span className="text-red-600 font-bold">Yes, Delete 🗑️</span>
+                    </label>
+
+                    <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      <input
+                        type="radio"
+                        name="confirmChoiceDetail"
+                        value="no"
+                        checked={confirmChoice === 'no'}
+                        onChange={() => setConfirmChoice('no')}
+                        className="w-4 h-4 text-slate-600 focus:ring-slate-500"
+                      />
+                      <span>No, Keep Challenge</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setDeleteModalOpen(false)}
+                    disabled={deletingLoading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="danger"
+                    disabled={deletingLoading}
+                  >
+                    {deletingLoading ? 'Deleting...' : 'Confirm & Delete 🗑️'}
                   </Button>
                 </div>
               </form>

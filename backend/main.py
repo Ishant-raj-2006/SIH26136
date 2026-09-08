@@ -1,14 +1,17 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Query
+from fastapi import FastAPI, Depends, HTTPException, status, Query, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-import models, schemas, auth
+import models, schemas, auth, email_service
 from database import database_target, get_db, init_db, SessionLocal
 from typing import List, Optional
 import math
 import os
+import shutil
+import uuid
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,7 +35,7 @@ def seed_default_data():
                 "email": "startup@procurement.com",
                 "username": "startup_user",
                 "password": "Startup@123",
-                "full_name": "Aarav Sharma",
+                "full_name": "Startup Founder",
                 "role": models.UserRole.STARTUP,
                 "organization": "AeroShield Robotics Pvt Ltd",
             },
@@ -200,6 +203,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Upload directory & Static Files
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 @app.get("/")
 def root():
     """Root endpoint for platform health and metadata"""
@@ -323,6 +331,93 @@ def get_current_user(email: str = Depends(auth.verify_token), db: Session = Depe
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+# ==================== OTP & PASSWORD RESET ROUTES ====================
+
+@app.post("/api/auth/send-otp", response_model=dict)
+def send_otp(req: schemas.SendOTPRequest, db: Session = Depends(get_db)):
+    """Generate and send email OTP code for Registration or Password Reset"""
+    clean_email = req.email.strip().lower()
+    
+    if req.purpose == "password_reset":
+        user = db.query(models.User).filter(func.lower(models.User.email) == clean_email).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Account with this email does not exist")
+    elif req.purpose == "registration":
+        existing = db.query(models.User).filter(func.lower(models.User.email) == clean_email).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="This email is already registered. Please Sign In or use a new email address.")
+            
+    code = email_service.generate_otp_code()
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
+    
+    otp_record = models.OTPRecord(
+        email=clean_email,
+        otp_code=code,
+        purpose=req.purpose,
+        expires_at=expires_at,
+        is_used=False
+    )
+    db.add(otp_record)
+    db.commit()
+    
+    sent = email_service.send_otp_email(clean_email, code, req.purpose)
+    
+    return {
+        "message": f"OTP sent to {clean_email} successfully",
+        "email": clean_email,
+        "purpose": req.purpose,
+        "dev_otp": code
+    }
+
+@app.post("/api/auth/verify-otp", response_model=dict)
+def verify_otp(req: schemas.VerifyOTPRequest, db: Session = Depends(get_db)):
+    """Verify an OTP code"""
+    clean_email = req.email.strip().lower()
+    clean_code = req.otp_code.strip()
+    
+    record = db.query(models.OTPRecord).filter(
+        func.lower(models.OTPRecord.email) == clean_email,
+        models.OTPRecord.otp_code == clean_code,
+        models.OTPRecord.purpose == req.purpose,
+        models.OTPRecord.is_used == False,
+        models.OTPRecord.expires_at > datetime.utcnow()
+    ).order_by(models.OTPRecord.id.desc()).first()
+    
+    if not record:
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP code. Please request a new OTP.")
+        
+    record.is_used = True
+    db.commit()
+    
+    return {"message": "OTP verified successfully", "email": clean_email, "valid": True}
+
+@app.post("/api/auth/reset-password", response_model=dict)
+def reset_password(req: schemas.ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Reset user password using verified OTP"""
+    clean_email = req.email.strip().lower()
+    clean_code = req.otp_code.strip()
+    
+    record = db.query(models.OTPRecord).filter(
+        func.lower(models.OTPRecord.email) == clean_email,
+        models.OTPRecord.otp_code == clean_code,
+        models.OTPRecord.purpose == "password_reset",
+        models.OTPRecord.expires_at > datetime.utcnow()
+    ).order_by(models.OTPRecord.id.desc()).first()
+    
+    if not record:
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP code for password reset")
+        
+    user = db.query(models.User).filter(func.lower(models.User.email) == clean_email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User account not found")
+        
+    user.hashed_password = auth.get_password_hash(req.new_password)
+    record.is_used = True
+    db.commit()
+    
+    print(f"[AUTH] Password updated for user: {clean_email}")
+    return {"message": "Password updated successfully in database! You may now sign in."}
+
 # ==================== STARTUP ROUTES ====================
 
 @app.post("/api/startups", response_model=schemas.StartupResponse)
@@ -402,9 +497,10 @@ def list_startups(skip: int = Query(0), limit: int = Query(10),
     
     total = query.count()
     startups = query.offset(skip).limit(limit).all()
+    serialized = [schemas.StartupResponse.model_validate(s).model_dump() for s in startups]
     
     return {
-        "data": startups,
+        "data": serialized,
         "total": total,
         "skip": skip,
         "limit": limit,
@@ -428,6 +524,168 @@ def update_startup(startup_id: int, startup_data: schemas.StartupUpdate,
     
     db.commit()
     db.refresh(startup)
+    return startup
+
+# ==================== COMPANY REGISTRATION & UPLOAD ROUTES ====================
+
+@app.post("/api/upload/file")
+async def upload_file(
+    file: UploadFile = File(...),
+    file_type: str = Form("certificate")  # "logo", "certificate", or "document"
+):
+    """
+    Upload image or certificate file (PNG, max 2MB for logo, max 10MB for certificate).
+    Saves to local database/uploads folder and returns file URL.
+    """
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No file selected for upload")
+    
+    filename_lower = file.filename.lower()
+    ext = os.path.splitext(filename_lower)[1]
+    
+    # Format check: PNG enforced for logo and incorporation certificate
+    if file_type in ["logo", "certificate"] and ext != ".png":
+        raise HTTPException(status_code=400, detail=f"File must be in PNG format. Received: {ext}")
+    
+    # Read file content to check size
+    contents = await file.read()
+    file_size = len(contents)
+    
+    max_logo_bytes = 2 * 1024 * 1024       # 2 MB max for logo
+    max_cert_bytes = 10 * 1024 * 1024      # 10 MB max for incorporation certificate
+    
+    if file_type == "logo" and file_size > max_logo_bytes:
+        raise HTTPException(status_code=400, detail="Logo file size exceeds 2 MB limit.")
+    elif file_size > max_cert_bytes:
+        raise HTTPException(status_code=400, detail="Certificate file size exceeds 10 MB limit.")
+    
+    # Save file with unique name
+    unique_filename = f"{uuid.uuid4().hex}_{file.filename}"
+    file_path = os.path.join(UPLOAD_DIR, unique_filename)
+    
+    with open(file_path, "wb") as f:
+        f.write(contents)
+        
+    url = f"/uploads/{unique_filename}"
+    return {
+        "url": url,
+        "filename": unique_filename,
+        "size_mb": round(file_size / (1024 * 1024), 2),
+        "message": "File uploaded successfully"
+    }
+
+@app.post("/api/company/register", response_model=schemas.StartupResponse)
+def register_company(
+    reg_data: schemas.CompanyRegistrationCreate,
+    email: str = Depends(auth.verify_token),
+    db: Session = Depends(get_db)
+):
+    """
+    3-Step Company Registration Endpoint.
+    Saves registration details with status='pending' requiring Government approval.
+    """
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User account not found")
+        
+    startup = db.query(models.Startup).filter(models.Startup.user_id == user.id).first()
+    
+    if not startup:
+        startup = models.Startup(
+            name=reg_data.name,
+            user_id=user.id,
+            description=reg_data.work_description or f"Registered company entity: {reg_data.name}",
+            industry="AI & DeepTech",
+            founded_year=reg_data.founded_year,
+            team_size=5,
+            funding_stage="seed",
+            technologies=["AI", "GovTech"],
+            status="pending"
+        )
+        db.add(startup)
+        db.commit()
+        db.refresh(startup)
+        
+    # Update startup with full 3-step registration fields
+    startup.name = reg_data.name
+    startup.logo_url = reg_data.logo_url
+    startup.company_type = reg_data.company_type
+    startup.company_type_other = reg_data.company_type_other
+    startup.founded_year = reg_data.founded_year
+    startup.headquarters_city = reg_data.headquarters_city
+    startup.state = reg_data.state
+    startup.website = reg_data.website
+    startup.official_email = reg_data.official_email
+    startup.contact_number = reg_data.contact_number
+    
+    startup.founder_ceo_name = reg_data.founder_ceo_name
+    startup.auth_rep_name = reg_data.auth_rep_name
+    startup.auth_rep_designation = reg_data.auth_rep_designation
+    startup.pan_number = reg_data.pan_number
+    startup.aadhaar_number = reg_data.aadhaar_number
+    startup.work_description = reg_data.work_description
+    startup.linkedin_url = reg_data.linkedin_url
+    
+    startup.cin_number = reg_data.cin_number
+    startup.dpiit_number = reg_data.dpiit_number
+    startup.gst_number = reg_data.gst_number
+    startup.udyam_number = reg_data.udyam_number
+    startup.incorporation_cert_url = reg_data.incorporation_cert_url
+    startup.relevant_doc_url = reg_data.relevant_doc_url
+    startup.status = "pending"  # Always set status to pending upon submission
+    
+    user.organization = reg_data.name
+    db.commit()
+    db.refresh(startup)
+    
+    # Send notification
+    notification = models.Notification(
+        user_id=user.id,
+        title="Company Registration Submitted",
+        message=f"Registration application for '{reg_data.name}' has been submitted and is currently pending government approval.",
+        type="company_registration"
+    )
+    db.add(notification)
+    db.commit()
+    
+    return startup
+
+@app.put("/api/startups/{startup_id}/status", response_model=schemas.StartupResponse)
+def update_startup_status(
+    startup_id: int,
+    status_str: str = Query(..., description="Target status: pending, approved, rejected"),
+    email: str = Depends(auth.verify_token),
+    db: Session = Depends(get_db)
+):
+    """
+    Government/Admin API to approve or reject pending company registration applications.
+    """
+    user = db.query(models.User).filter(models.User.email == email).first()
+    startup = db.query(models.Startup).filter(models.Startup.id == startup_id).first()
+    if not startup:
+        raise HTTPException(status_code=404, detail="Startup profile not found")
+        
+    valid_statuses = ["pending", "approved", "rejected"]
+    if status_str not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of {valid_statuses}")
+        
+    startup.status = status_str
+    if status_str == "approved":
+        startup.is_verified = True
+        
+    db.commit()
+    db.refresh(startup)
+    
+    # Notify startup user
+    notification = models.Notification(
+        user_id=startup.user_id,
+        title=f"Company Registration {status_str.capitalize()}",
+        message=f"Your company registration status for '{startup.name}' is now {status_str.upper()}.",
+        type="registration_status"
+    )
+    db.add(notification)
+    db.commit()
+    
     return startup
 
 # ==================== CHALLENGE ROUTES ====================
@@ -459,20 +717,25 @@ def get_challenge(challenge_id: int, db: Session = Depends(get_db)):
 def list_challenges(skip: int = Query(0), limit: int = Query(10),
                    status: Optional[str] = None,
                    category: Optional[str] = None,
+                   creator_id: Optional[int] = None,
                    db: Session = Depends(get_db)):
     """List challenges with filters"""
     query = db.query(models.Challenge)
     
-    if status:
-        query = query.filter(models.Challenge.status == status)
-    if category:
-        query = query.filter(models.Challenge.category == category)
+    if status and status.strip():
+        # Case-insensitive match for status (e.g. 'open' vs 'OPEN')
+        query = query.filter(models.Challenge.status.ilike(f"%{status.strip()}%"))
+    if category and category.strip():
+        query = query.filter(models.Challenge.category.ilike(f"%{category.strip()}%"))
+    if creator_id is not None:
+        query = query.filter(models.Challenge.creator_id == creator_id)
     
     total = query.count()
-    challenges = query.offset(skip).limit(limit).all()
+    challenges = query.order_by(models.Challenge.id.desc()).offset(skip).limit(limit).all()
+    serialized = [schemas.ChallengeResponse.model_validate(c).model_dump() for c in challenges]
     
     return {
-        "data": challenges,
+        "data": serialized,
         "total": total,
         "skip": skip,
         "limit": limit,
@@ -483,12 +746,19 @@ def list_challenges(skip: int = Query(0), limit: int = Query(10),
 def update_challenge(challenge_id: int, challenge_data: schemas.ChallengeUpdate,
                      email: str = Depends(auth.verify_token),
                      db: Session = Depends(get_db)):
-    """Update challenge status"""
+    """Update challenge specifications"""
     user = db.query(models.User).filter(models.User.email == email).first()
     challenge = db.query(models.Challenge).filter(models.Challenge.id == challenge_id).first()
     
-    if not challenge or challenge.creator_id != user.id:
-        raise HTTPException(status_code=403, detail="Not authorized")
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+        
+    is_admin = user and (user.role == models.UserRole.ADMIN or user.role == "admin")
+    is_dept = user and (user.role == models.UserRole.DEPARTMENT or user.role == "department")
+    is_creator = user and challenge.creator_id == user.id
+
+    if not (is_creator or is_dept or is_admin):
+        raise HTTPException(status_code=403, detail="Not authorized to edit this challenge")
     
     update_data = challenge_data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
@@ -497,6 +767,28 @@ def update_challenge(challenge_id: int, challenge_data: schemas.ChallengeUpdate,
     db.commit()
     db.refresh(challenge)
     return challenge
+
+@app.delete("/api/challenges/{challenge_id}", response_model=dict)
+def delete_challenge(challenge_id: int,
+                     email: str = Depends(auth.verify_token),
+                     db: Session = Depends(get_db)):
+    """Delete a challenge (department/admin or creator)"""
+    user = db.query(models.User).filter(models.User.email == email).first()
+    challenge = db.query(models.Challenge).filter(models.Challenge.id == challenge_id).first()
+    
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+        
+    is_admin = user and (user.role == models.UserRole.ADMIN or user.role == "admin")
+    is_dept = user and (user.role == models.UserRole.DEPARTMENT or user.role == "department")
+    is_creator = user and challenge.creator_id == user.id
+
+    if not (is_creator or is_dept or is_admin):
+        raise HTTPException(status_code=403, detail="Not authorized to delete this challenge")
+        
+    db.delete(challenge)
+    db.commit()
+    return {"message": f"Challenge {challenge_id} deleted successfully", "id": challenge_id}
 
 # ==================== PROPOSAL ROUTES ====================
 
@@ -510,6 +802,12 @@ def create_proposal(proposal_data: schemas.ProposalCreate,
     
     if not startup:
         raise HTTPException(status_code=404, detail="Startup not found")
+    
+    if not (startup.cin_number and startup.incorporation_cert_url) and startup.status == "pending":
+        raise HTTPException(
+            status_code=403,
+            detail="Your company registration is incomplete. Please complete company registration first."
+        )
     
     challenge = db.query(models.Challenge).filter(
         models.Challenge.id == proposal_data.challenge_id

@@ -19,15 +19,17 @@ interface NavItem {
 
 // Role-specific nav configs
 const departmentNav: NavItem[] = [
-  { label: 'Dashboard',         href: '/dashboard',    icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'My Challenges',     href: '/challenges',   icon: <ClipboardList className="h-4 w-4" /> },
-  { label: 'Discover Startups', href: '/startups',     icon: <Rocket className="h-4 w-4" /> },
-  { label: 'Review Proposals',  href: '/proposals',    icon: <MessagesSquare className="h-4 w-4" /> },
-  { label: 'Manage Pilots',     href: '/pilots',       icon: <FlaskConical className="h-4 w-4" /> },
+  { label: 'Dashboard',             href: '/dashboard',          icon: <LayoutDashboard className="h-4 w-4" /> },
+  { label: 'New Companies Approval',href: '/startups/approvals',  icon: <Building2 className="h-4 w-4 text-amber-400" /> },
+  { label: 'My Challenges',         href: '/challenges',         icon: <ClipboardList className="h-4 w-4" /> },
+  { label: 'Discover Startups',     href: '/startups',           icon: <Rocket className="h-4 w-4" /> },
+  { label: 'Review Proposals',      href: '/proposals',          icon: <MessagesSquare className="h-4 w-4" /> },
+  { label: 'Manage Pilots',         href: '/pilots',             icon: <FlaskConical className="h-4 w-4" /> },
 ];
 
 const startupNav: NavItem[] = [
   { label: 'Dashboard',         href: '/dashboard',        icon: <LayoutDashboard className="h-4 w-4" /> },
+  { label: 'Company Register',  href: '/register/company', icon: <Building2 className="h-4 w-4 text-emerald-400" /> },
   { label: 'Browse Challenges', href: '/challenges',        icon: <ClipboardList className="h-4 w-4" /> },
   { label: 'My Proposals',      href: '/proposals',         icon: <MessagesSquare className="h-4 w-4" /> },
   { label: 'My Pilots',         href: '/pilots',            icon: <FlaskConical className="h-4 w-4" /> },
@@ -35,19 +37,21 @@ const startupNav: NavItem[] = [
 ];
 
 const evaluatorNav: NavItem[] = [
-  { label: 'Dashboard',          href: '/dashboard',   icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'My Evaluations',     href: '/evaluations', icon: <CheckSquare className="h-4 w-4" /> },
-  { label: 'All Challenges',     href: '/challenges',  icon: <ClipboardList className="h-4 w-4" /> },
+  { label: 'Dashboard',          href: '/dashboard',          icon: <LayoutDashboard className="h-4 w-4" /> },
+  { label: 'Company Approvals',  href: '/startups/approvals', icon: <Building2 className="h-4 w-4 text-amber-400" /> },
+  { label: 'My Evaluations',     href: '/evaluations',        icon: <CheckSquare className="h-4 w-4" /> },
+  { label: 'All Challenges',     href: '/challenges',         icon: <ClipboardList className="h-4 w-4" /> },
 ];
 
 const adminNav: NavItem[] = [
-  { label: 'Dashboard',   href: '/dashboard',  icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Challenges',  href: '/challenges', icon: <ClipboardList className="h-4 w-4" /> },
-  { label: 'Startups',    href: '/startups',   icon: <Rocket className="h-4 w-4" /> },
-  { label: 'Proposals',   href: '/proposals',  icon: <MessagesSquare className="h-4 w-4" /> },
-  { label: 'Pilots',      href: '/pilots',     icon: <FlaskConical className="h-4 w-4" /> },
-  { label: 'Evaluations', href: '/evaluations',icon: <CheckSquare className="h-4 w-4" /> },
-  { label: 'Users',       href: '/users',      icon: <Users className="h-4 w-4" /> },
+  { label: 'Dashboard',          href: '/dashboard',          icon: <LayoutDashboard className="h-4 w-4" /> },
+  { label: 'Company Approvals',  href: '/startups/approvals', icon: <Building2 className="h-4 w-4 text-amber-400" /> },
+  { label: 'Challenges',         href: '/challenges',         icon: <ClipboardList className="h-4 w-4" /> },
+  { label: 'Startups',           href: '/startups',           icon: <Rocket className="h-4 w-4" /> },
+  { label: 'Proposals',          href: '/proposals',          icon: <MessagesSquare className="h-4 w-4" /> },
+  { label: 'Pilots',             href: '/pilots',             icon: <FlaskConical className="h-4 w-4" /> },
+  { label: 'Evaluations',        href: '/evaluations',        icon: <CheckSquare className="h-4 w-4" /> },
+  { label: 'Users',              href: '/users',              icon: <Users className="h-4 w-4" /> },
 ];
 
 function getNavItems(role?: string): NavItem[] {
@@ -315,3 +319,7 @@ export const Sidebar: React.FC = () => {
     </>
   );
 };
+
+export default function Navigation({ activeTab }: { activeTab?: string }) {
+  return <Header />;
+}
