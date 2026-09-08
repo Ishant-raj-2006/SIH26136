@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useClerk } from '@clerk/nextjs';
 import {
   Bell, Menu, X, LogOut, LayoutDashboard, MessagesSquare, Rocket,
   ClipboardList, FlaskConical, CheckSquare, Users, UserCircle,
@@ -111,7 +112,14 @@ export const Header: React.FC = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, [showNotifications]);
 
-  const handleLogout = () => {
+  const { signOut } = useClerk();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (err) {
+      console.error('Error signing out from Clerk:', err);
+    }
     logout();
     router.push('/?auth=signin');
   };
@@ -124,7 +132,7 @@ export const Header: React.FC = () => {
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-stone-200 bg-[#fffdf8]/95 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+    <header className="sticky top-0 z-40 border-b border-white/40 bg-white/40 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/50 transition-all">
       <div className="flex items-center justify-between px-4 py-3">
         {/* Left: hamburger + logo */}
         <div className="flex items-center gap-3">

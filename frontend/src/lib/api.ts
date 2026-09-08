@@ -722,8 +722,16 @@ class APIClient {
   }
 
   // =========================
-  // Health check
+  // Clerk Sync & Health check
   // =========================
+
+  async clerkSync(data: { email: string; full_name?: string; role?: string; department?: string }) {
+    const response = await this.client.post('/api/auth/clerk-sync', data);
+    if (response.data.access_token) {
+      this.setToken(response.data.access_token);
+    }
+    return response.data;
+  }
 
   async healthCheck() {
     const response = await this.client.get(

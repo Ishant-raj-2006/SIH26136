@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { SectionHeader } from '@/components/SectionHeader';
 import { FileText, Scale, Layers, Award, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import type { NextPageWithLayout } from './_app';
+import { BackgroundVideo } from '@/components/BackgroundVideo';
 
 const workflowSteps = [
   {
@@ -57,20 +58,23 @@ const WorkflowPage: NextPageWithLayout = () => {
   const StepIcon = activeStep.icon;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased">
-      <SectionHeader activeTab="workflow" />
+    <div className="min-h-screen bg-transparent text-slate-900 font-sans antialiased relative">
+      <BackgroundVideo videoSrc="/Vid.mp4" overlayOpacity={0.75} mode="light" />
+      <div className="relative z-20">
+        <SectionHeader activeTab="workflow" />
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-4 shadow-2xs">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50/80 backdrop-blur-md border border-emerald-200 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm">
             <Layers className="w-3.5 h-3.5 text-emerald-700" />
             Statutory Architecture
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight drop-shadow-sm">
             The 4-Stage Procurement Pipeline
           </h1>
-          <p className="mt-4 text-slate-600 text-base sm:text-lg leading-relaxed">
+          <p className="mt-4 text-slate-700 text-base sm:text-lg leading-relaxed font-medium">
             From initial operational pain-point formulation to final GFR 194 production procurement contract execution.
           </p>
         </div>
@@ -86,27 +90,27 @@ const WorkflowPage: NextPageWithLayout = () => {
                 key={s.step}
                 type="button"
                 onClick={() => setActiveIndex(idx)}
-                className={`p-5 rounded-2xl border text-left transition-all relative ${
+                className={`p-5 rounded-2xl border text-left transition-all relative backdrop-blur-md ${
                   isSelected
-                    ? `${s.activeBg} ${s.borderColor} shadow-md ring-2 ring-blue-600/20`
-                    : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    ? `${s.activeBg} ${s.borderColor} shadow-lg ring-2 ring-blue-600/20`
+                    : 'bg-white/70 border-slate-200/80 hover:border-slate-300 hover:bg-white/90'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-extrabold text-slate-400">STAGE {s.step}</span>
-                  <div className={`p-2 rounded-xl bg-white shadow-2xs ${isSelected ? 'text-blue-900' : 'text-slate-600'}`}>
+                  <span className="text-xs font-extrabold text-slate-500">STAGE {s.step}</span>
+                  <div className={`p-2 rounded-xl bg-white/90 shadow-2xs ${isSelected ? 'text-blue-900' : 'text-slate-600'}`}>
                     <IconComp className="w-4 h-4" />
                   </div>
                 </div>
                 <h2 className="text-base font-bold text-slate-900 leading-snug">{s.title}</h2>
-                <p className="text-xs text-slate-500 font-semibold mt-1">{s.actor}</p>
+                <p className="text-xs text-slate-600 font-semibold mt-1">{s.actor}</p>
               </button>
             );
           })}
         </div>
 
         {/* Active Stage Deep Dive Focus Box */}
-        <div className="p-8 sm:p-10 rounded-3xl bg-white border border-slate-200 shadow-md mb-16 relative overflow-hidden">
+        <div className="p-8 sm:p-10 rounded-3xl bg-white/80 backdrop-blur-xl border border-white/80 shadow-xl mb-16 relative overflow-hidden">
           <div className="flex flex-col lg:flex-row gap-8 justify-between items-start">
             <div className="space-y-4 max-w-2xl">
               <div className="flex items-center gap-3">

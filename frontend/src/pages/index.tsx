@@ -20,6 +20,7 @@ import {
 import { useAuthStore } from '@/lib/stores/auth';
 import { AuthDrawer } from '@/components/AuthDrawer';
 import { SectionHeader } from '@/components/SectionHeader';
+import { BackgroundVideo } from '@/components/BackgroundVideo';
 import type { NextPageWithLayout } from './_app';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -86,24 +87,26 @@ const HomePage: NextPageWithLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 selection:bg-amber-100 selection:text-amber-900 font-sans antialiased overflow-x-hidden flex flex-col justify-between">
+    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-blue-600 selection:text-white font-sans antialiased overflow-x-hidden flex flex-col justify-between relative">
       <Toaster position="top-right" />
 
-      {/* Modern Left-Side Animated Auth Drawer */}
+      {/* Video Background (Vid.mp4) - Clearly visible dark ambient video */}
+      <BackgroundVideo videoSrc="/Vid.mp4" overlayOpacity={0.45} mode="dark" />
+
+      {/* Auth Drawer */}
       <AuthDrawer
         isOpen={authDrawerOpen}
         onClose={() => setAuthDrawerOpen(false)}
         initialMode={authDrawerMode}
       />
 
-      {/* Top Header with About Dropdown Navigation */}
-      <SectionHeader />
+      {/* Top Header Navigation */}
+      <div className="relative z-20">
+        <SectionHeader />
+      </div>
 
-      {/* HERO SECTION WITH DIGNIFIED LIGHT THEME */}
-      <section className="relative pt-10 pb-16 lg:pt-14 lg:pb-20 bg-slate-50 border-b border-slate-200/80">
-        {/* Architectural Hairline Grid */}
-        <div className="absolute inset-0 pointer-events-none opacity-40 bg-[linear-gradient(to_right,#cbd5e1_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e1_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_10%,#000_60%,transparent_100%)]" />
-
+      {/* HERO SECTION WITH VISIBLE VIDEO ANIMATION BACKGROUND */}
+      <section className="relative z-10 pt-8 pb-12 lg:pt-12 lg:pb-16 border-b border-slate-800/80">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             {/* Left Column: Mission, Headlines, CTAs */}
@@ -111,13 +114,13 @@ const HomePage: NextPageWithLayout = () => {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold shadow-2xs mb-6"
+                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-900/90 border border-blue-500/40 text-blue-300 text-xs font-semibold shadow-lg backdrop-blur-md mb-6"
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                <span className="font-bold">Official Procurement Sandbox</span>
-                <span className="text-blue-300">|</span>
-                <span className="text-slate-700 flex items-center gap-1 font-medium">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-bold text-white">Official Procurement Sandbox</span>
+                <span className="text-blue-400/60">|</span>
+                <span className="text-slate-200 flex items-center gap-1 font-medium">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                   Zero Turnover Barrier for DPIIT Startups
                 </span>
               </motion.div>
@@ -126,10 +129,10 @@ const HomePage: NextPageWithLayout = () => {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.12]"
+                className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-[1.12]"
               >
                 Empowering Governments to{' '}
-                <span className="text-blue-900 underline decoration-blue-300 decoration-4 underline-offset-8">
+                <span className="text-blue-400 underline decoration-blue-500 decoration-4 underline-offset-8">
                   Identify, Pilot & Scale
                 </span>{' '}
                 Startup Solutions
@@ -139,7 +142,7 @@ const HomePage: NextPageWithLayout = () => {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="mt-6 text-lg text-slate-600 leading-relaxed max-w-2xl font-normal"
+                className="mt-6 text-lg text-slate-200 leading-relaxed max-w-2xl font-normal drop-shadow-sm"
               >
                 Replace rigid legacy tender specs with agile, outcome-based problem statements. Test breakthrough deep-tech innovations in risk-contained departmental sandboxes with milestone-based escrow payments and compliant GFR 194 scale-up contracts.
               </motion.p>
@@ -154,165 +157,114 @@ const HomePage: NextPageWithLayout = () => {
                 <button
                   type="button"
                   onClick={openSignIn}
-                  className="w-full sm:w-auto px-8 py-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-base shadow-lg shadow-blue-900/15 flex items-center justify-center gap-2.5 transition-all hover:scale-[1.02]"
+                  className="w-full sm:w-auto px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-base shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all hover:scale-[1.02]"
                 >
                   Enter Workspace / Sign In
                   <ArrowRight className="w-5 h-5 text-amber-300" />
                 </button>
                 <Link
                   href="/challenges"
-                  className="w-full sm:w-auto px-7 py-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold text-base flex items-center justify-center gap-2 shadow-sm transition-all hover:border-blue-500"
+                  className="w-full sm:w-auto px-7 py-4 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-white font-bold text-base flex items-center justify-center gap-2 shadow-md backdrop-blur-md transition-all hover:border-blue-400"
                 >
-                  <Search className="w-4 h-4 text-blue-700" />
+                  <Search className="w-4 h-4 text-blue-400" />
                   Explore Active RFPs
                 </Link>
                 <button
                   type="button"
                   onClick={openRegister}
-                  className="w-full sm:w-auto px-7 py-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-base flex items-center justify-center gap-2 shadow-md shadow-emerald-900/10 transition-all"
+                  className="w-full sm:w-auto px-7 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.02]"
                 >
-                  <Rocket className="w-4 h-4 text-emerald-200" />
+                  <Rocket className="w-4 h-4 text-amber-300" />
                   Register Startup
                 </button>
-              </motion.div>
-
-              {/* 1-Click Instant Demo Role Launcher */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="mt-8 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm"
-              >
-                <div className="flex items-center justify-between text-xs text-slate-600 mb-3 font-semibold">
-                  <span className="flex items-center gap-1.5 text-blue-800 font-bold">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                    1-Click Instant Sandbox Demo:
-                  </span>
-                  <span className="text-[11px] text-slate-500">Click role to log in instantly</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                  <button
-                    onClick={() => handleQuickLogin('government@procurement.com', 'Government@123', 'Department')}
-                    disabled={loggingInRole !== null}
-                    className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-amber-50/60 hover:bg-amber-100 border border-amber-200 text-amber-950 text-xs font-bold transition-all disabled:opacity-50"
-                  >
-                    {loggingInRole === 'Department' ? (
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Building2 className="w-3.5 h-3.5 text-amber-700" />
-                    )}
-                    🏛️ As Department
-                  </button>
-
-                  <button
-                    onClick={() => handleQuickLogin('startup@procurement.com', 'Startup@123', 'Startup')}
-                    disabled={loggingInRole !== null}
-                    className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-emerald-50/60 hover:bg-emerald-100 border border-emerald-200 text-emerald-950 text-xs font-bold transition-all disabled:opacity-50"
-                  >
-                    {loggingInRole === 'Startup' ? (
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Rocket className="w-3.5 h-3.5 text-emerald-700" />
-                    )}
-                    🚀 As Startup
-                  </button>
-
-                  <button
-                    onClick={() => handleQuickLogin('admin@procurement.com', 'Admin@123', 'Evaluator')}
-                    disabled={loggingInRole !== null}
-                    className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-blue-50/60 hover:bg-blue-100 border border-blue-200 text-blue-950 text-xs font-bold transition-all disabled:opacity-50"
-                  >
-                    {loggingInRole === 'Evaluator' ? (
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Scale className="w-3.5 h-3.5 text-blue-700" />
-                    )}
-                    ⚖️ As Evaluator
-                  </button>
-                </div>
               </motion.div>
             </div>
 
             {/* Right Column: Sandbox Telemetry Card */}
             <div className="lg:col-span-5">
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="relative rounded-3xl bg-white border border-slate-200 p-6 shadow-lg overflow-hidden"
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: [0, -20, 0, 12, 0], x: [0, 8, 0, -8, 0], rotate: [0, 1.4, 0, -1.4, 0] }}
+                transition={{
+                  opacity: { duration: 0.5, delay: 0.2 },
+                  scale: { duration: 0.5, delay: 0.2 },
+                  y: { duration: 5, repeat: Infinity, ease: 'easeInOut' },
+                  x: { duration: 6.5, repeat: Infinity, ease: 'easeInOut' },
+                  rotate: { duration: 7, repeat: Infinity, ease: 'easeInOut' }
+                }}
+                className="relative rounded-3xl bg-slate-900/20 border border-slate-400/30 p-6 shadow-2xl overflow-hidden backdrop-blur-md transition-all hover:bg-slate-900/30 hover:border-blue-400/50"
               >
-                <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-700/40 mb-5">
                   <div className="flex items-center gap-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-white">
                       Live Sandbox Telemetry
                     </span>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-900 text-[10px] font-semibold border border-blue-200">
+                  <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-400/40">
                     GFR RULE 194 ACTIVE
                   </span>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <div className="p-4 rounded-2xl bg-slate-950/25 backdrop-blur-md border border-slate-800/40">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-blue-900 tracking-wider">Pilot Sandbox #SB-804</span>
-                        <h4 className="text-sm font-bold text-slate-900">AI Wildfire Perimeter Aerial Telemetry</h4>
+                        <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">Pilot Sandbox #SB-804</span>
+                        <h4 className="text-sm font-bold text-white">AI Wildfire Perimeter Aerial Telemetry</h4>
                       </div>
-                      <span className="text-xs font-bold text-emerald-800">₹35,00,000</span>
+                      <span className="text-xs font-bold text-emerald-400">₹35,00,000</span>
                     </div>
 
                     <div className="mt-3">
-                      <div className="flex justify-between text-xs text-slate-600 mb-1.5 font-medium">
+                      <div className="flex justify-between text-xs text-slate-200 mb-1.5 font-medium">
                         <span>Milestone 2: Field Sensor Integration</span>
-                        <span className="text-blue-800 font-bold">68% Completed</span>
+                        <span className="text-blue-400 font-bold">68% Completed</span>
                       </div>
-                      <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+                      <div className="w-full h-2 rounded-full bg-slate-800/80 overflow-hidden">
                         <motion.div
-                          className="h-full bg-blue-700 rounded-full"
+                          className="h-full bg-blue-500 rounded-full"
                           initial={{ width: '0%' }}
                           animate={{ width: '68%' }}
                           transition={{ duration: 1.5, ease: 'easeOut' }}
                         />
                       </div>
-                      <div className="flex justify-between text-[11px] text-slate-500 mt-1.5 font-medium">
+                      <div className="flex justify-between text-[11px] text-slate-300 mt-1.5 font-medium">
                         <span>Tranche ₹14.0L Escrowed</span>
-                        <span className="text-emerald-800 font-semibold">Auto-Disburses on Sign-off</span>
+                        <span className="text-emerald-400 font-semibold">Auto-Disburses on Sign-off</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2.5 text-center">
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                      <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Evaluation</div>
-                      <div className="text-base font-bold text-emerald-800 mt-0.5">92 / 100</div>
-                      <div className="text-[10px] text-slate-500">Blind Matrix</div>
+                    <div className="p-3 rounded-xl bg-slate-950/25 backdrop-blur-md border border-slate-800/40">
+                      <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Evaluation</div>
+                      <div className="text-base font-bold text-emerald-400 mt-0.5">92 / 100</div>
+                      <div className="text-[10px] text-slate-400">Blind Matrix</div>
                     </div>
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                      <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">IP Escrow</div>
-                      <div className="text-base font-bold text-blue-800 mt-0.5">100%</div>
-                      <div className="text-[10px] text-slate-500">Protected</div>
+                    <div className="p-3 rounded-xl bg-slate-950/25 backdrop-blur-md border border-slate-800/40">
+                      <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">IP Escrow</div>
+                      <div className="text-base font-bold text-blue-400 mt-0.5">100%</div>
+                      <div className="text-[10px] text-slate-400">Protected</div>
                     </div>
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                      <div className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">TRL Score</div>
-                      <div className="text-base font-bold text-amber-800 mt-0.5">TRL 7</div>
-                      <div className="text-[10px] text-slate-500">Field Ready</div>
+                    <div className="p-3 rounded-xl bg-slate-950/25 backdrop-blur-md border border-slate-800/40">
+                      <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">TRL Score</div>
+                      <div className="text-base font-bold text-amber-400 mt-0.5">TRL 7</div>
+                      <div className="text-[10px] text-slate-400">Field Ready</div>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                  <div className="p-3 rounded-xl bg-emerald-500/15 backdrop-blur-md border border-emerald-500/40 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-800">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400">
                         <ShieldCheck className="w-5 h-5" />
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-slate-900">DPIIT Exemption Verified</div>
-                        <div className="text-[11px] text-slate-600">Cert #DIPP102948 • Prior turnover waived</div>
+                        <div className="text-xs font-bold text-white">DPIIT Exemption Verified</div>
+                        <div className="text-[11px] text-slate-200">Cert #DIPP102948 • Prior turnover waived</div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-300">
+                    <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40">
                       ELIGIBLE
                     </span>
                   </div>
@@ -322,58 +274,58 @@ const HomePage: NextPageWithLayout = () => {
           </div>
 
           {/* Key Pillars Grid */}
-          <div className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Link href="/problem" className="p-6 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 transition-all shadow-2xs hover:shadow-md group">
-              <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center mb-4 text-amber-800">
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Link href="/problem" className="p-6 rounded-2xl bg-slate-900/85 border border-slate-700/80 hover:border-blue-400 backdrop-blur-md transition-all shadow-xl hover:scale-[1.02] group">
+              <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mb-4 text-amber-300">
                 <FileText className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-900 transition-colors">Outcome-Based RFPs</h3>
-              <p className="text-sm text-slate-600 leading-relaxed mb-3">
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">Outcome-Based RFPs</h3>
+              <p className="text-sm text-slate-300 leading-relaxed mb-3">
                 Define pain-points by target KPIs rather than vendor-biased specs that disqualify new tech.
               </p>
-              <div className="text-xs font-bold text-blue-700 flex items-center gap-1">
+              <div className="text-xs font-bold text-blue-400 flex items-center gap-1">
                 Explore Problem & Vision
                 <ArrowRight className="w-3.5 h-3.5" />
               </div>
             </Link>
 
-            <Link href="/workflow" className="p-6 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 transition-all shadow-2xs hover:shadow-md group">
-              <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center mb-4 text-emerald-800">
+            <Link href="/workflow" className="p-6 rounded-2xl bg-slate-900/85 border border-slate-700/80 hover:border-blue-400 backdrop-blur-md transition-all shadow-xl hover:scale-[1.02] group">
+              <div className="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-4 text-emerald-300">
                 <Zap className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-900 transition-colors">Zero Turnover Barrier</h3>
-              <p className="text-sm text-slate-600 leading-relaxed mb-3">
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">Zero Turnover Barrier</h3>
+              <p className="text-sm text-slate-300 leading-relaxed mb-3">
                 Eligible startups bypass balance-sheet quotas. Selection is based 100% on technical POC merit.
               </p>
-              <div className="text-xs font-bold text-blue-700 flex items-center gap-1">
+              <div className="text-xs font-bold text-blue-400 flex items-center gap-1">
                 View 4-Stage Pipeline
                 <ArrowRight className="w-3.5 h-3.5" />
               </div>
             </Link>
 
-            <Link href="/gfr194" className="p-6 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 transition-all shadow-2xs hover:shadow-md group">
-              <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center mb-4 text-blue-800">
+            <Link href="/gfr194" className="p-6 rounded-2xl bg-slate-900/85 border border-slate-700/80 hover:border-blue-400 backdrop-blur-md transition-all shadow-xl hover:scale-[1.02] group">
+              <div className="w-11 h-11 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center mb-4 text-blue-300">
                 <Lock className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-900 transition-colors">IP Escrow & Protection</h3>
-              <p className="text-sm text-slate-600 leading-relaxed mb-3">
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">IP Escrow & Protection</h3>
+              <p className="text-sm text-slate-300 leading-relaxed mb-3">
                 Controlled sandboxes with statutory non-disclosure and complete founder patent safety.
               </p>
-              <div className="text-xs font-bold text-blue-700 flex items-center gap-1">
+              <div className="text-xs font-bold text-blue-400 flex items-center gap-1">
                 Read GFR 194 Rules
                 <ArrowRight className="w-3.5 h-3.5" />
               </div>
             </Link>
 
-            <Link href="/portals" className="p-6 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 transition-all shadow-2xs hover:shadow-md group">
-              <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center mb-4 text-slate-800">
+            <Link href="/portals" className="p-6 rounded-2xl bg-slate-900/85 border border-slate-700/80 hover:border-blue-400 backdrop-blur-md transition-all shadow-xl hover:scale-[1.02] group">
+              <div className="w-11 h-11 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center mb-4 text-slate-200">
                 <DollarSign className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-900 transition-colors">Milestone Escrow Tranches</h3>
-              <p className="text-sm text-slate-600 leading-relaxed mb-3">
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">Milestone Escrow Tranches</h3>
+              <p className="text-sm text-slate-300 leading-relaxed mb-3">
                 Automated fund disbursements upon digital verification of field trial deliverables.
               </p>
-              <div className="text-xs font-bold text-blue-700 flex items-center gap-1">
+              <div className="text-xs font-bold text-blue-400 flex items-center gap-1">
                 Check Entity Portals
                 <ArrowRight className="w-3.5 h-3.5" />
               </div>
@@ -383,9 +335,9 @@ const HomePage: NextPageWithLayout = () => {
       </section>
 
       {/* NATIONAL IMPACT METRICS STRIP */}
-      <section className="bg-slate-900 text-white border-y border-slate-800 py-8">
+      <section className="relative z-10 bg-slate-900/90 text-white py-8 border-t border-slate-800 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-slate-800">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-slate-800">
             <div className="pt-2 md:pt-0">
               <div className="text-3xl font-extrabold text-white tracking-tight">₹48.5 Cr+</div>
               <div className="text-xs uppercase tracking-wider text-slate-400 mt-1 font-semibold">Sandbox Pilot Grants</div>
@@ -406,28 +358,28 @@ const HomePage: NextPageWithLayout = () => {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="border-t border-slate-200 bg-slate-100 py-8 text-slate-600 text-sm mt-auto">
+      {/* COMPACT PROFESSIONAL FOOTER */}
+      <footer className="relative z-10 border-t border-slate-800 bg-slate-950 py-6 text-slate-300 text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-700 text-white flex items-center justify-center font-bold text-base shadow-sm">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
               GX
             </div>
             <div>
-              <div className="text-slate-900 font-bold tracking-tight">GoPilot-X BHARAT</div>
-              <div className="text-xs text-slate-500">Government of India • Smart India Hackathon PS SIH26136</div>
+              <div className="text-white font-bold tracking-tight text-sm">GoPilot-X BHARAT</div>
+              <div className="text-[11px] text-slate-400">Government of India • Smart India Hackathon PS SIH26136</div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-600 font-semibold">
-            <Link href="/problem" className="hover:text-blue-700 transition-colors">Problem & Vision</Link>
-            <Link href="/workflow" className="hover:text-blue-700 transition-colors">4-Stage Pipeline</Link>
-            <Link href="/portals" className="hover:text-blue-700 transition-colors">Portals</Link>
-            <Link href="/gfr194" className="hover:text-blue-700 transition-colors">GFR 194 Guidelines</Link>
-            <Link href="/faq" className="hover:text-blue-700 transition-colors">FAQ</Link>
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-300 font-semibold">
+            <Link href="/problem" className="hover:text-blue-400 transition-colors">Problem & Vision</Link>
+            <Link href="/workflow" className="hover:text-blue-400 transition-colors">4-Stage Pipeline</Link>
+            <Link href="/portals" className="hover:text-blue-400 transition-colors">Portals</Link>
+            <Link href="/gfr194" className="hover:text-blue-400 transition-colors">GFR 194 Guidelines</Link>
+            <Link href="/faq" className="hover:text-blue-400 transition-colors">FAQ</Link>
           </div>
 
-          <div className="text-xs text-slate-500 text-center md:text-right font-medium">
+          <div className="text-xs text-slate-400 text-center md:text-right font-medium">
             Official Startup Procurement Sandbox Framework
           </div>
         </div>
@@ -442,9 +394,9 @@ const HomePage: NextPageWithLayout = () => {
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={scrollToTop}
             title="Scroll back to top"
-            className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-blue-700 text-white shadow-xl hover:bg-blue-800 transition-all"
+            className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-500 transition-all"
           >
-            <ChevronUp className="w-5 h-5 text-white" />
+            <ChevronUp className="w-5 h-5 text-amber-300" />
           </motion.button>
         )}
       </AnimatePresence>

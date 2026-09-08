@@ -3,30 +3,34 @@ import Link from 'next/link';
 import { SectionHeader } from '@/components/SectionHeader';
 import { Scale, ShieldCheck, FileText, Lock, Award, CheckCircle2, ArrowRight } from 'lucide-react';
 import type { NextPageWithLayout } from './_app';
+import { BackgroundVideo } from '@/components/BackgroundVideo';
 
 const Gfr194Page: NextPageWithLayout = () => {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased">
-      <SectionHeader activeTab="gfr194" />
+    <div className="min-h-screen bg-transparent text-slate-900 font-sans antialiased relative">
+      <BackgroundVideo videoSrc="/Vid.mp4" overlayOpacity={0.75} mode="light" />
+      <div className="relative z-20">
+        <SectionHeader activeTab="gfr194" />
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold uppercase tracking-wider mb-4 shadow-2xs">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50/80 backdrop-blur-md border border-blue-200 text-blue-900 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm">
             <Scale className="w-3.5 h-3.5 text-blue-700" />
             General Financial Rules 2017
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight drop-shadow-sm">
             GFR Rule 194 Statutory Compliance & Framework
           </h1>
-          <p className="mt-4 text-slate-600 text-base sm:text-lg leading-relaxed">
+          <p className="mt-4 text-slate-700 text-base sm:text-lg leading-relaxed font-medium">
             Statutory framework empowering public procuring entities to execute single-source procurement contracts for validated startup innovations.
           </p>
         </div>
 
         {/* 3 Pillars Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <div className="p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div className="p-8 rounded-3xl bg-white/80 backdrop-blur-xl border border-white/80 shadow-lg space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-800">
               <ShieldCheck className="w-6 h-6" />
             </div>
@@ -40,7 +44,7 @@ const Gfr194Page: NextPageWithLayout = () => {
             </div>
           </div>
 
-          <div className="p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div className="p-8 rounded-3xl bg-white/80 backdrop-blur-xl border border-white/80 shadow-lg space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-800">
               <Lock className="w-6 h-6" />
             </div>
@@ -54,7 +58,7 @@ const Gfr194Page: NextPageWithLayout = () => {
             </div>
           </div>
 
-          <div className="p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div className="p-8 rounded-3xl bg-white/80 backdrop-blur-xl border border-white/80 shadow-lg space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-800">
               <Award className="w-6 h-6" />
             </div>

@@ -13,9 +13,12 @@ class UserRole(str, enum.Enum):
 
 class ChallengeStatus(str, enum.Enum):
     OPEN = "open"
+    ACTIVE = "active"
     EVALUATING = "evaluating"
     PILOT_RUNNING = "pilot_running"
+    PROJECT = "project"
     COMPLETED = "completed"
+    CLOSED = "closed"
     CANCELLED = "cancelled"
 
 class PilotStatus(str, enum.Enum):
@@ -97,7 +100,7 @@ class Challenge(Base):
     description = Column(Text)
     problem_statement = Column(Text)
     budget = Column(Float)
-    status = Column(SQLEnum(ChallengeStatus), default=ChallengeStatus.OPEN)
+    status = Column(String, default="open")
     category = Column(String)
     tags = Column(JSON)
     deadline = Column(DateTime)

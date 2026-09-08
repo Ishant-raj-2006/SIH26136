@@ -18,10 +18,28 @@ if any(value in DATABASE_URL for value in ("YOUR-NEON-HOST", "USER:PASSWORD", "D
         "from Neon Console -> Connect into backend/.env."
     )
 
-if DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
-elif DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+has_psycopg2 = False
+try:
+    import psycopg2
+    has_psycopg2 = True
+except ImportError:
+    pass
+
+has_psycopg = False
+try:
+    import psycopg
+    has_psycopg = True
+except ImportError:
+    pass
+
+if DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswith("postgres://"):
+    prefix = "postgresql://" if DATABASE_URL.startswith("postgresql://") else "postgres://"
+    if has_psycopg2:
+        DATABASE_URL = DATABASE_URL.replace(prefix, "postgresql+psycopg2://", 1)
+    elif has_psycopg:
+        DATABASE_URL = DATABASE_URL.replace(prefix, "postgresql+psycopg://", 1)
+    else:
+        DATABASE_URL = DATABASE_URL.replace(prefix, "postgresql+psycopg2://", 1)
 
 # SQLite needs check_same_thread=False; PostgreSQL does not
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
@@ -64,52 +82,57 @@ def init_db():
                 """))
             Base.metadata.create_all(bind=connection)
             
-            # Safe auto-migration for SQLite to add new columns to existing startups table
-            if connection.dialect.name == "sqlite":
-                columns_to_add = [
-                    ("company_type", "VARCHAR DEFAULT 'startup'"),
-                    ("company_type_other", "VARCHAR"),
-                    ("headquarters_city", "VARCHAR"),
-                    ("state", "VARCHAR"),
-                    ("official_email", "VARCHAR"),
-                    ("contact_number", "VARCHAR"),
-                    ("founder_ceo_name", "VARCHAR"),
-                    ("auth_rep_name", "VARCHAR"),
-                    ("auth_rep_designation", "VARCHAR"),
-                    ("pan_number", "VARCHAR"),
-                    ("aadhaar_number", "VARCHAR"),
-                    ("work_description", "TEXT"),
-                    ("linkedin_url", "VARCHAR"),
-                    ("cin_number", "VARCHAR"),
-                    ("dpiit_number", "VARCHAR"),
-                    ("gst_number", "VARCHAR"),
-                    ("udyam_number", "VARCHAR"),
-                    ("incorporation_cert_url", "VARCHAR"),
-                    ("relevant_doc_url", "VARCHAR"),
-                    ("status", "VARCHAR DEFAULT 'pending'")
-                ]
-                for col_name, col_type in columns_to_add:
-                    try:
+            # Safe auto-migration for SQLite and PostgreSQL to add missing columns to existing tables
+            columns_to_add = [
+                ("company_type", "VARCHAR DEFAULT 'startup'"),
+                ("company_type_other", "VARCHAR"),
+                ("headquarters_city", "VARCHAR"),
+                ("state", "VARCHAR"),
+                ("official_email", "VARCHAR"),
+                ("contact_number", "VARCHAR"),
+                ("founder_ceo_name", "VARCHAR"),
+                ("auth_rep_name", "VARCHAR"),
+                ("auth_rep_designation", "VARCHAR"),
+                ("pan_number", "VARCHAR"),
+                ("aadhaar_number", "VARCHAR"),
+                ("work_description", "TEXT"),
+                ("linkedin_url", "VARCHAR"),
+                ("cin_number", "VARCHAR"),
+                ("dpiit_number", "VARCHAR"),
+                ("gst_number", "VARCHAR"),
+                ("udyam_number", "VARCHAR"),
+                ("incorporation_cert_url", "VARCHAR"),
+                ("relevant_doc_url", "VARCHAR"),
+                ("status", "VARCHAR DEFAULT 'pending'")
+            ]
+            for col_name, col_type in columns_to_add:
+                try:
+                    if connection.dialect.name == "postgresql":
+                        connection.execute(text(f"ALTER TABLE startups ADD COLUMN IF NOT EXISTS {col_name} {col_type}"))
+                    else:
                         connection.execute(text(f"ALTER TABLE startups ADD COLUMN {col_name} {col_type}"))
-                    except Exception:
-                        pass
-                
-                challenge_cols = [
-                    ("problem_code", "VARCHAR"),
-                    ("department_or_ministry", "VARCHAR"),
-                    ("contact_person_name", "VARCHAR"),
-                    ("contact_phone", "VARCHAR"),
-                    ("contact_email", "VARCHAR"),
-                    ("target_beneficiaries", "JSON"),
-                    ("target_beneficiaries_other", "VARCHAR"),
-                    ("technical_requirements", "JSON"),
-                    ("technical_requirements_other", "VARCHAR")
-                ]
-                for col_name, col_type in challenge_cols:
-                    try:
+                except Exception:
+                    pass
+            
+            challenge_cols = [
+                ("problem_code", "VARCHAR"),
+                ("department_or_ministry", "VARCHAR"),
+                ("contact_person_name", "VARCHAR"),
+                ("contact_phone", "VARCHAR"),
+                ("contact_email", "VARCHAR"),
+                ("target_beneficiaries", "VARCHAR"),
+                ("target_beneficiaries_other", "VARCHAR"),
+                ("technical_requirements", "VARCHAR"),
+                ("technical_requirements_other", "VARCHAR")
+            ]
+            for col_name, col_type in challenge_cols:
+                try:
+                    if connection.dialect.name == "postgresql":
+                        connection.execute(text(f"ALTER TABLE challenges ADD COLUMN IF NOT EXISTS {col_name} {col_type}"))
+                    else:
                         connection.execute(text(f"ALTER TABLE challenges ADD COLUMN {col_name} {col_type}"))
-                    except Exception:
-                        pass
+                except Exception:
+                    pass
     except SQLAlchemyError as error:
         raise RuntimeError(
             "Could not connect to Neon PostgreSQL. Check DATABASE_URL, the Neon branch, "
@@ -118,7 +141,10 @@ def init_db():
 
 
 def database_target():
+    if not DATABASE_URL or DATABASE_URL.startswith("sqlite"):
+        db_file = DATABASE_URL.replace("sqlite:///", "").lstrip("./") if DATABASE_URL else "sql_app.db"
+        return f"SQLite Database ({db_file})"
     parsed = urlsplit(DATABASE_URL)
-    host = parsed.hostname or "unknown-host"
-    database = parsed.path.lstrip("/") or "unknown-database"
-    return f"{host}/{database}"
+    host = parsed.hostname or "cloud.neon.tech"
+    database = parsed.path.lstrip("/") or "neondb"
+    return f"Neon PostgreSQL ({host}/{database})"

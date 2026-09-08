@@ -200,3 +200,14 @@ SIH26136/
 Hello
 ---
 *Dedicated to building transparent, agile, and merit-driven digital public infrastructure for Bharat's deep-tech innovators.*
+
+
+cd backend
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+cp .env.example .env
+python seed_users.py
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+

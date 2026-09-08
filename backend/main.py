@@ -185,7 +185,7 @@ async def startup_event():
     print("=" * 60)
     print("  Startup Procurement Platform — Backend Server")
     print("=" * 60)
-    print(f"  [DB]     Connected to Neon PostgreSQL: {database_target()}")
+    print(f"  [DB]     Connected Database: {database_target()}")
     print(f"  [AUTH]   SECRET_KEY loaded from .env: {secret_loaded}")
     print(f"  [DOCS]   API Docs available at: http://localhost:8000/docs")
     print(f"  [HEALTH] Health check at:       http://localhost:8000/api/health")
@@ -273,8 +273,59 @@ def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
         db.rollback()
         print(f"Registration error: {str(e)}")
         import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
+@app.post("/api/auth/clerk-sync", response_model=schemas.Token)
+def clerk_sync(payload: dict, db: Session = Depends(get_db)):
+    """Sync and authenticate user authenticated via Clerk or Google OAuth"""
+    email = str(payload.get("email", "")).strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required from Clerk auth payload")
+    
+    full_name = payload.get("full_name") or email.split("@")[0]
+    role_str = str(payload.get("role") or "startup").lower()
+    dept = payload.get("department") or "Ministry of Electronics & Information Technology (MeitY)"
+    
+    user = db.query(models.User).filter(func.lower(models.User.email) == email).first()
+    if not user:
+        role_enum = models.UserRole.STARTUP
+        if "dept" in role_str or "gov" in role_str:
+            role_enum = models.UserRole.DEPARTMENT
+        elif "eval" in role_str:
+            role_enum = models.UserRole.EVALUATOR
+        elif "admin" in role_str:
+            role_enum = models.UserRole.ADMIN
+            
+        user = models.User(
+            email=email,
+            username=email.split("@")[0] + "_" + str(uuid.uuid4())[:4],
+            hashed_password=auth.get_password_hash("ClerkAuth@123"),
+            full_name=full_name,
+            role=role_enum,
+            organization=dept,
+            is_verified=True
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        
+        # Create Startup record if startup
+        if role_enum == models.UserRole.STARTUP:
+            new_startup = models.Startup(
+                name=f"{full_name}'s Enterprise",
+                description=f"DPIIT-recognized enterprise connected to {dept}.",
+                user_id=user.id,
+                industry="AI & DeepTech",
+                official_email=email,
+                is_verified=True
+            )
+            db.add(new_startup)
+            db.commit()
+            
+    access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = auth.create_access_token(
+        data={"sub": user.email, "id": user.id, "role": user.role},
+        expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/api/auth/login", response_model=schemas.Token)
 def login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):

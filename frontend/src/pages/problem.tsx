@@ -3,23 +3,27 @@ import Link from 'next/link';
 import { SectionHeader } from '@/components/SectionHeader';
 import { ShieldCheck, X, CheckCircle2, ArrowRight, Rocket, FileText } from 'lucide-react';
 import type { NextPageWithLayout } from './_app';
+import { BackgroundVideo } from '@/components/BackgroundVideo';
 
 const ProblemPage: NextPageWithLayout = () => {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased">
-      <SectionHeader activeTab="problem" />
+    <div className="min-h-screen bg-transparent text-slate-900 font-sans antialiased relative">
+      <BackgroundVideo videoSrc="/Vid.mp4" overlayOpacity={0.75} mode="light" />
+      <div className="relative z-20">
+        <SectionHeader activeTab="problem" />
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold uppercase tracking-wider mb-4 shadow-2xs">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50/80 backdrop-blur-md border border-blue-200 text-blue-900 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm">
             <FileText className="w-3.5 h-3.5 text-blue-700" />
             Problem Statement SIH26136
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight drop-shadow-sm">
             Why Conventional Procurement Fails High-Tech Startups
           </h1>
-          <p className="mt-4 text-slate-600 text-base sm:text-lg leading-relaxed">
+          <p className="mt-4 text-slate-700 text-base sm:text-lg leading-relaxed font-medium">
             Standard tenders (L1 procurement) were engineered for cement and stationery, not artificial intelligence, drones, and biotech. Here is how GoPilot-X resolves the systemic deadlock:
           </p>
         </div>
@@ -27,8 +31,8 @@ const ProblemPage: NextPageWithLayout = () => {
         {/* Side-by-Side Comparison */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch mb-16">
           {/* Conventional Barrier Card */}
-          <div className="p-8 rounded-3xl bg-white border border-red-200 relative overflow-hidden flex flex-col justify-between shadow-sm">
-            <div className="absolute top-0 right-0 px-4 py-1.5 bg-red-100 border-b border-l border-red-200 text-red-800 text-xs font-bold uppercase tracking-wider">
+          <div className="p-8 rounded-3xl bg-white/80 backdrop-blur-xl border border-red-200/90 relative overflow-hidden flex flex-col justify-between shadow-lg">
+            <div className="absolute top-0 right-0 px-4 py-1.5 bg-red-100/90 border-b border-l border-red-200 text-red-800 text-xs font-bold uppercase tracking-wider">
               Conventional Framework
             </div>
             <div>
@@ -73,7 +77,7 @@ const ProblemPage: NextPageWithLayout = () => {
           </div>
 
           {/* GoPilot-X Solution Card */}
-          <div className="p-8 rounded-3xl bg-white border border-emerald-300 relative overflow-hidden flex flex-col justify-between shadow-sm">
+          <div className="p-8 rounded-3xl bg-white/80 backdrop-blur-xl border border-emerald-300/90 relative overflow-hidden flex flex-col justify-between shadow-lg">
             <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider">
               GoPilot-X Mechanism
             </div>
