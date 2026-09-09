@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, model_validator
+import json
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Any
 from enum import Enum
 
 class UserRole(str, Enum):
@@ -201,6 +202,22 @@ class ChallengeResponse(BaseModel):
     technical_requirements_other: Optional[str] = None
     created_at: datetime
     
+    @model_validator(mode='before')
+    @classmethod
+    def parse_json_lists(cls, values):
+        if hasattr(values, '__dict__'):
+            data = values.__dict__
+        else:
+            data = dict(values)
+            
+        for field in ['tags', 'target_beneficiaries', 'technical_requirements']:
+            if field in data and isinstance(data[field], str):
+                try:
+                    data[field] = json.loads(data[field])
+                except Exception:
+                    data[field] = []
+        return data
+
     class Config:
         from_attributes = True
 
