@@ -5,12 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Calendar, DollarSign, Tag, ShieldCheck, CheckCircle2,
   Clock, Send, Building2, FileText, Sparkles, AlertCircle, Award,
-  Users, Layers, Share2, Check, Copy, Edit3, Trash2
+  Users, Layers, Share2, Check, Copy, Edit3, Trash2, MessageSquare
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { useAuthStore } from '@/lib/stores/auth';
 import { Layout } from '@/components/Layout';
 import { Card, Button, Input, Textarea, Badge, Select } from '@/components/UI';
+import { ProposalChat } from '@/components/ProposalChat';
 import toast from 'react-hot-toast';
 import type { Challenge, Proposal } from '@/types';
 import type { NextPageWithLayout } from '../_app';
@@ -103,6 +104,8 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
   // Department / Evaluator view: received proposals
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [proposalsLoading, setProposalsLoading] = useState(false);
+  const [chatProposalId, setChatProposalId] = useState<number | null>(null);
+  const [chatTitle, setChatTitle] = useState<string>('');
 
   useEffect(() => {
     if (!id) return;
@@ -602,14 +605,28 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
                   {proposals.map((p) => (
                     <div key={p.id} className="py-3 flex items-center justify-between gap-4">
                       <div>
-                        <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{p.title}</h4>
+                        <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {p.startup_name || 'Startup'} <span className="text-slate-400 font-normal ml-1">({p.title})</span>
+                        </h4>
                         <p className="text-xs text-slate-500">
                           Quote: ₹{(p.cost / 100000).toFixed(2)}L • Timeline: {p.timeline}
                         </p>
                       </div>
-                      <Badge variant={p.status === 'accepted' ? 'success' : 'primary'} size="sm">
-                        {p.status}
-                      </Badge>
+                      <div className="flex items-center gap-3">
+                        <Badge variant={p.status === 'accepted' ? 'success' : 'primary'} size="sm">
+                          {p.status}
+                        </Badge>
+                        <button
+                          onClick={() => {
+                            setChatProposalId(p.id);
+                            setChatTitle(`Chat with ${p.startup_name || 'Startup'}`);
+                          }}
+                          className="p-1.5 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
+                          title="Open Chat"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1112,7 +1129,15 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
           </div>
         )}
       </AnimatePresence>
-    </div>
+
+      {chatProposalId && (
+        <ProposalChat 
+          proposalId={chatProposalId} 
+          title={chatTitle}
+          onClose={() => setChatProposalId(null)} 
+        />
+      )}
+    </>
   );
 };
 

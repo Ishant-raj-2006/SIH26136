@@ -909,7 +909,7 @@ def create_proposal(proposal_data: schemas.ProposalCreate,
     notification = models.Notification(
         user_id=challenge.creator_id,
         title="New Proposal Received",
-        message=f"{startup.name} submitted a proposal for '{challenge.title}'",
+        message=f"{startup.name} ne aapka proposal (problem statement) accept kar liya hai: '{challenge.title}'",
         type="proposal",
         related_id=db_proposal.id
     )
@@ -934,8 +934,15 @@ def get_challenge_proposals(challenge_id: int, skip: int = Query(0),
     total = query.count()
     proposals = query.offset(skip).limit(limit).all()
     
+    proposal_data = []
+    for p in proposals:
+        p_dict = schemas.ProposalResponse.model_validate(p).model_dump()
+        startup = db.query(models.Startup).filter(models.Startup.id == p.startup_id).first()
+        p_dict["startup_name"] = startup.name if startup else "Unknown Startup"
+        proposal_data.append(p_dict)
+    
     return {
-        "data": proposals,
+        "data": proposal_data,
         "total": total,
         "skip": skip,
         "limit": limit,

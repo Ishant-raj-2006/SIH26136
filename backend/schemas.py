@@ -243,6 +243,7 @@ class ProposalResponse(BaseModel):
     evaluation_score: float
     status: str
     submitted_at: datetime
+    startup_name: Optional[str] = None
     
     class Config:
         from_attributes = True

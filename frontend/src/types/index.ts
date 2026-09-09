@@ -68,6 +68,7 @@ export interface Proposal {
   evaluation_score: number;
   status: string;
   submitted_at: string;
+  startup_name?: string;
 }
 
 export interface Evaluation {
