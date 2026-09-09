@@ -101,7 +101,7 @@ class Challenge(Base):
     description = Column(Text)
     problem_statement = Column(Text)
     budget = Column(Float)
-    status = Column(String, default="open")
+    status = Column(SQLEnum(ChallengeStatus), default=ChallengeStatus.OPEN)
     category = Column(String)
     tags = Column(JSON)
     deadline = Column(DateTime)
