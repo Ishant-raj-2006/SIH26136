@@ -689,27 +689,29 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
                       )}
 
                       {/* Select Department / Ministry Connection */}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                          Select Department / Ministry Connection 🏛️
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                            <Landmark className="w-3.5 h-3.5" />
+                      {regData.role === 'department' && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Select Department / Ministry Connection 🏛️
+                          </label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                              <Landmark className="w-3.5 h-3.5" />
+                            </div>
+                            <select
+                              value={regData.department}
+                              onChange={(e) => setRegData({ ...regData, department: e.target.value })}
+                              className="w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/15 focus:border-emerald-600 transition-all appearance-none"
+                            >
+                              {departmentOptions.map((dept, idx) => (
+                                <option key={idx} value={dept}>
+                                  {dept}
+                                </option>
+                              ))}
+                            </select>
                           </div>
-                          <select
-                            value={regData.department}
-                            onChange={(e) => setRegData({ ...regData, department: e.target.value })}
-                            className="w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/15 focus:border-emerald-600 transition-all appearance-none"
-                          >
-                            {departmentOptions.map((dept, idx) => (
-                              <option key={idx} value={dept}>
-                                {dept}
-                              </option>
-                            ))}
-                          </select>
                         </div>
-                      </div>
+                      )}
 
                       {/* Full Name & Organization */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
