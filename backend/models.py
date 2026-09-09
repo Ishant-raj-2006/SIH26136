@@ -230,3 +230,15 @@ class Message(Base):
     
     proposal = relationship("Proposal", backref="messages")
     sender = relationship("User", backref="sent_messages")
+
+class ProgressUpdate(Base):
+    __tablename__ = "progress_updates"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    pilot_id = Column(Integer, ForeignKey("pilots.id"), index=True)
+    percentage = Column(Integer)
+    description = Column(Text)
+    photo_url = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    pilot = relationship("Pilot", backref="progress_updates")

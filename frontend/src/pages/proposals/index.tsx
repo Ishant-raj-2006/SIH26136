@@ -83,8 +83,16 @@ const DepartmentProposals: React.FC = () => {
       }
     };
     fetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [challengeFilter, challenges.length]);
+  }, [challenges, search, statusFilter, challengeFilter]);
+
+  const handleAccept = async (id: number) => {
+    try {
+      await apiClient.acceptProposal(id);
+      setProposals(proposals.map(p => p.id === id ? { ...p, status: 'accepted' } : p));
+    } catch (err) {
+      console.error('Failed to accept proposal', err);
+    }
+  };
 
   const filtered = proposals.filter((p) => {
     if (statusFilter && p.status !== statusFilter) return false;
@@ -240,8 +248,13 @@ const DepartmentProposals: React.FC = () => {
                     </Link>
                     {(proposal.status === 'submitted' || proposal.status === 'under_review') && user?.role !== 'ministry' ? (
                       <>
-                        <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20">
-                          <Check className="w-3.5 h-3.5" /> Shortlist
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleAccept(proposal.id)}
+                          className="flex items-center gap-1 text-xs text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                        >
+                          <Check className="w-3.5 h-3.5" /> Accept
                         </Button>
                         <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs text-red-500 border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20">
                           <X className="w-3.5 h-3.5" /> Reject

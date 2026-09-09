@@ -14,6 +14,7 @@ import { SkeletonCard } from '@/components/Skeletons';
 import { format, formatDistanceToNow } from 'date-fns';
 import { GFR194CertificateModal, type GFR194CertificateData } from '@/components/GFR194CertificateModal';
 import { MilestoneEscrowModal } from '@/components/MilestoneEscrowModal';
+import { ProgressModal } from '@/components/ProgressModal';
 import type { Pilot } from '@/types';
 import type { NextPageWithLayout } from '../_app';
 
@@ -92,6 +93,9 @@ const DepartmentPilots: React.FC = () => {
   const [escrowModalOpen, setEscrowModalOpen] = useState(false);
   const [selectedEscrowPilot, setSelectedEscrowPilot] = useState<Pilot | null>(null);
 
+  const [progressModalOpen, setProgressModalOpen] = useState(false);
+  const [selectedProgressPilot, setSelectedProgressPilot] = useState<Pilot | null>(null);
+
   useEffect(() => {
     apiClient.listPilots(0, 50)
       .then((res) => {
@@ -137,6 +141,11 @@ const DepartmentPilots: React.FC = () => {
   const handleOpenEscrow = (pilot: Pilot) => {
     setSelectedEscrowPilot(pilot);
     setEscrowModalOpen(true);
+  };
+
+  const handleOpenProgress = (pilot: Pilot) => {
+    setSelectedProgressPilot(pilot);
+    setProgressModalOpen(true);
   };
 
   return (
@@ -285,6 +294,15 @@ const DepartmentPilots: React.FC = () => {
                       <FileCheck className="w-3.5 h-3.5 text-amber-400" />
                       Generate GFR 194 Scale-Up Deed
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleOpenProgress(pilot)}
+                      className="w-full py-2 px-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-200 transition-colors"
+                    >
+                      <Layers className="w-3.5 h-3.5 text-emerald-700" />
+                      View Work Status
+                    </button>
                   </div>
                 </Card>
               </motion.div>
@@ -314,6 +332,15 @@ const DepartmentPilots: React.FC = () => {
           isDepartmentOfficer={true}
         />
       )}
+
+      {/* Progress Modal */}
+      {selectedProgressPilot && (
+        <ProgressModal
+          isOpen={progressModalOpen}
+          onClose={() => setProgressModalOpen(false)}
+          pilotId={selectedProgressPilot.id}
+        />
+      )}
     </motion.div>
   );
 };
@@ -329,6 +356,9 @@ const StartupPilots: React.FC = () => {
 
   const [escrowModalOpen, setEscrowModalOpen] = useState(false);
   const [selectedEscrowPilot, setSelectedEscrowPilot] = useState<Pilot | null>(null);
+
+  const [progressModalOpen, setProgressModalOpen] = useState(false);
+  const [selectedProgressPilot, setSelectedProgressPilot] = useState<Pilot | null>(null);
 
   useEffect(() => {
     apiClient.listPilots(0, 50)
@@ -366,6 +396,11 @@ const StartupPilots: React.FC = () => {
   const handleOpenEscrow = (pilot: Pilot) => {
     setSelectedEscrowPilot(pilot);
     setEscrowModalOpen(true);
+  };
+
+  const handleOpenProgress = (pilot: Pilot) => {
+    setSelectedProgressPilot(pilot);
+    setProgressModalOpen(true);
   };
 
   return (
@@ -475,6 +510,17 @@ const StartupPilots: React.FC = () => {
                       View Milestone Escrow & Payments
                     </button>
                   </div>
+
+                  <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenProgress(pilot)}
+                      className="w-full py-2 px-3 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold text-sm flex items-center justify-center gap-1.5 border border-indigo-200 transition-colors"
+                    >
+                      <Layers className="w-4 h-4 text-indigo-700" />
+                      Update Work Status
+                    </button>
+                  </div>
                 </Card>
               </motion.div>
             );
@@ -501,6 +547,15 @@ const StartupPilots: React.FC = () => {
           startupName={startupNames[selectedEscrowPilot.startup_id] || 'Startup Entity'}
           totalBudgetLakhs={selectedEscrowPilot.budget_approved / 100000}
           isDepartmentOfficer={false}
+        />
+      )}
+
+      {/* Progress Modal */}
+      {selectedProgressPilot && (
+        <ProgressModal
+          isOpen={progressModalOpen}
+          onClose={() => setProgressModalOpen(false)}
+          pilotId={selectedProgressPilot.id}
         />
       )}
     </motion.div>

@@ -621,6 +621,13 @@ class APIClient {
     return response.data;
   }
 
+  async acceptProposal(proposalId: number) {
+    const response = await this.client.post(
+      `/api/proposals/${proposalId}/accept`
+    );
+    return response.data;
+  }
+
   // =========================
   // Evaluation endpoints
   // =========================
@@ -677,6 +684,21 @@ class APIClient {
       }
     );
 
+    return response.data;
+  }
+
+  async getPilotProgress(pilotId: number) {
+    const response = await this.client.get(
+      `/api/pilots/${pilotId}/progress`
+    );
+    return response.data;
+  }
+
+  async submitPilotProgress(pilotId: number, data: { percentage: number; description: string; photo_url?: string }) {
+    const response = await this.client.post(
+      `/api/pilots/${pilotId}/progress`,
+      data
+    );
     return response.data;
   }
 

@@ -370,3 +370,20 @@ class MessageResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+# Progress Tracking Schemas
+class ProgressUpdateCreate(BaseModel):
+    percentage: int
+    description: str
+    photo_url: Optional[str] = None
+
+class ProgressUpdateResponse(BaseModel):
+    id: int
+    pilot_id: int
+    percentage: int
+    description: str
+    photo_url: Optional[str] = None
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True

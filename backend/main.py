@@ -1000,6 +1000,57 @@ def create_proposal_message(proposal_id: int, message_data: schemas.MessageCreat
         
     return message
 
+@app.post("/api/proposals/{proposal_id}/accept", response_model=schemas.ProposalResponse)
+def accept_proposal(proposal_id: int, email: str = Depends(auth.verify_token), db: Session = Depends(get_db)):
+    """Accept a proposal and create a pilot"""
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user or user.role not in ["department", "ministry", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    proposal = db.query(models.Proposal).filter(models.Proposal.id == proposal_id).first()
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+        
+    if proposal.status == "accepted":
+        raise HTTPException(status_code=400, detail="Proposal already accepted")
+        
+    # Update status
+    proposal.status = "accepted"
+    db.commit()
+    db.refresh(proposal)
+    
+    # Create pilot if not exists
+    existing_pilot = db.query(models.Pilot).filter(
+        models.Pilot.challenge_id == proposal.challenge_id,
+        models.Pilot.startup_id == proposal.startup_id
+    ).first()
+    
+    if not existing_pilot:
+        new_pilot = models.Pilot(
+            challenge_id=proposal.challenge_id,
+            startup_id=proposal.startup_id,
+            status="active",
+            budget_approved=proposal.cost
+        )
+        db.add(new_pilot)
+        db.commit()
+        db.refresh(new_pilot)
+        
+        # Send Deal Done Notification
+        startup = db.query(models.Startup).filter(models.Startup.id == proposal.startup_id).first()
+        if startup:
+            notification = models.Notification(
+                user_id=startup.user_id,
+                title="Deal Done",
+                message=f"Okay deal done. Your proposal '{proposal.title}' has been accepted. You can start your work.",
+                type="pilot",
+                related_id=new_pilot.id
+            )
+            db.add(notification)
+            db.commit()
+            
+    return proposal
+
 # ==================== EVALUATION ROUTES ====================
 
 @app.post("/api/evaluations", response_model=schemas.EvaluationResponse)
@@ -1120,6 +1171,49 @@ def list_pilots(email: str = Depends(auth.verify_token),
         "limit": limit,
         "pages": math.ceil(total / limit) if limit > 0 else 1
     }
+
+# ==================== PROGRESS UPDATE ROUTES ====================
+
+@app.get("/api/pilots/{pilot_id}/progress", response_model=List[schemas.ProgressUpdateResponse])
+def get_pilot_progress(pilot_id: int, db: Session = Depends(get_db)):
+    """Get all progress updates for a pilot"""
+    pilot = db.query(models.Pilot).filter(models.Pilot.id == pilot_id).first()
+    if not pilot:
+        raise HTTPException(status_code=404, detail="Pilot not found")
+        
+    updates = db.query(models.ProgressUpdate).filter(models.ProgressUpdate.pilot_id == pilot_id).order_by(models.ProgressUpdate.created_at.asc()).all()
+    return updates
+
+@app.post("/api/pilots/{pilot_id}/progress", response_model=schemas.ProgressUpdateResponse)
+def submit_pilot_progress(pilot_id: int, update_data: schemas.ProgressUpdateCreate, email: str = Depends(auth.verify_token), db: Session = Depends(get_db)):
+    """Submit a progress update for a pilot"""
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+        
+    pilot = db.query(models.Pilot).filter(models.Pilot.id == pilot_id).first()
+    if not pilot:
+        raise HTTPException(status_code=404, detail="Pilot not found")
+        
+    # Validation: Only startup can submit progress
+    startup = db.query(models.Startup).filter(models.Startup.user_id == user.id).first()
+    if not startup or startup.id != pilot.startup_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this pilot's progress")
+        
+    # Validation: Must be multiple of 10
+    if update_data.percentage % 10 != 0 or update_data.percentage < 10 or update_data.percentage > 100:
+        raise HTTPException(status_code=400, detail="Percentage must be a multiple of 10 between 10 and 100")
+        
+    progress = models.ProgressUpdate(
+        pilot_id=pilot_id,
+        percentage=update_data.percentage,
+        description=update_data.description,
+        photo_url=update_data.photo_url
+    )
+    db.add(progress)
+    db.commit()
+    db.refresh(progress)
+    return progress
 
 # ==================== MILESTONE ROUTES ====================
 
