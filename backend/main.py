@@ -685,6 +685,7 @@ def register_company(
     startup.incorporation_cert_url = reg_data.incorporation_cert_url
     startup.relevant_doc_url = reg_data.relevant_doc_url
     startup.status = "pending"  # Always set status to pending upon submission
+    startup.is_verified = False
     
     user.organization = reg_data.name
     db.commit()

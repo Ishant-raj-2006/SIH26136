@@ -354,19 +354,21 @@ const StartupDashboard: React.FC<{ stats: any; loading: boolean; challenges: any
         </Card>
       </motion.div>
 
-      {/* Quick Actions */}
-      <motion.div variants={item}>
-        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-50 mb-4">Quick Actions</h2>
-        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-          <ActionCard primary href="/challenges"        icon={<ClipboardList className="w-5 h-5" />} title="Browse Challenges"   description="Find govt. challenges matching your expertise" />
-          <ActionCard       href="/proposals"           icon={<MessagesSquareIcon />}                  title="My Proposals"       description="Track your submitted proposals & statuses" />
-          <ActionCard       href="/pilots"              icon={<FlaskConical className="w-5 h-5" />}   title="My Pilots"          description="View active pilots and milestone payments" />
-          <ActionCard       href="/startups/profile"   icon={<Rocket className="w-5 h-5" />}          title="Update Profile"     description="Improve profile score to unlock more challenges" />
-        </div>
-      </motion.div>
+      {/* Quick Actions (Only for verified startups) */}
+      {stats?.is_verified && (
+        <motion.div variants={item}>
+          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-50 mb-4">Quick Actions</h2>
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+            <ActionCard primary href="/challenges"        icon={<ClipboardList className="w-5 h-5" />} title="Browse Challenges"   description="Find govt. challenges matching your expertise" />
+            <ActionCard       href="/proposals"           icon={<MessagesSquareIcon />}                  title="My Proposals"       description="Track your submitted proposals & statuses" />
+            <ActionCard       href="/pilots"              icon={<FlaskConical className="w-5 h-5" />}   title="My Pilots"          description="View active pilots and milestone payments" />
+            <ActionCard       href="/startups/profile"   icon={<Rocket className="w-5 h-5" />}          title="Update Profile"     description="Improve profile score to unlock more challenges" />
+          </div>
+        </motion.div>
+      )}
 
-      {/* Open Challenges to explore */}
-      {challenges.filter(c => c.status === 'open').length > 0 && (
+      {/* Open Challenges to explore (Only for verified startups) */}
+      {stats?.is_verified && challenges.filter(c => c.status === 'open').length > 0 && (
         <motion.div variants={item}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-slate-900 dark:text-slate-50">Open Challenges For You</h2>

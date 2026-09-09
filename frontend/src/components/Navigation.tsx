@@ -258,6 +258,12 @@ export const Sidebar: React.FC = () => {
   const { sidebarOpen, setSidebarOpen } = useAppStore();
 
   const navItems = getNavItems(user?.role);
+  const { stats } = useAppStore();
+
+  // Hide sidebar for startups that are not yet verified (pending approval)
+  if (user?.role === 'startup' && stats && stats.is_verified === false) {
+    return null;
+  }
 
   return (
     <>
