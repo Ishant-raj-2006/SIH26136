@@ -210,6 +210,48 @@ const StartupDetailPage: NextPageWithLayout = () => {
               This entity possesses verified DPIIT status under Startup India, qualifying for statutory exemption from Prior Turnover and Prior Experience in all Central & State government procurements.
             </p>
           </Card>
+
+          {(user?.role === 'department' || user?.role === 'ministry' || user?.role === 'admin') && (
+            <Card className="p-6 space-y-4 border border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">Statutory Documents</h3>
+              <div className="space-y-3 text-sm">
+                {startup.cin_number && (
+                  <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-500">CIN Number</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">{startup.cin_number}</span>
+                  </div>
+                )}
+                {startup.dpiit_number && (
+                  <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-500">DPIIT Number</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">{startup.dpiit_number}</span>
+                  </div>
+                )}
+                {startup.pan_number && (
+                  <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-500">PAN</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">{startup.pan_number}</span>
+                  </div>
+                )}
+                {startup.incorporation_cert_url && (
+                  <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-slate-500">Incorporation Cert</span>
+                    <a href={startup.incorporation_cert_url} target="_blank" rel="noreferrer" className="text-primary-600 font-semibold hover:underline flex items-center gap-1">
+                      View <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                )}
+                {startup.relevant_doc_url && (
+                  <div className="flex justify-between py-1.5">
+                    <span className="text-slate-500">Additional Docs</span>
+                    <a href={startup.relevant_doc_url} target="_blank" rel="noreferrer" className="text-primary-600 font-semibold hover:underline flex items-center gap-1">
+                      View <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
         </div>
       </div>
     </div>

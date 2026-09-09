@@ -22,6 +22,13 @@ export interface Startup {
   technologies: string[];
   verification_score: number;
   is_verified: boolean;
+  cin_number?: string;
+  dpiit_number?: string;
+  gst_number?: string;
+  udyam_number?: string;
+  incorporation_cert_url?: string;
+  relevant_doc_url?: string;
+  pan_number?: string;
   created_at: string;
 }
 

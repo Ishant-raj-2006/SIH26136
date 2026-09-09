@@ -15,6 +15,11 @@ import { formatDistanceToNow } from 'date-fns';
 import type { Proposal } from '@/types';
 import type { NextPageWithLayout } from '../_app';
 
+const safeDate = (d: any) => {
+  const date = new Date(d);
+  return isNaN(date.getTime()) ? new Date() : date;
+};
+
 const fade = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.07 } },
@@ -212,7 +217,7 @@ const DepartmentProposals: React.FC = () => {
                         </span>
                         <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                           <Calendar className="w-3.5 h-3.5" />
-                          {formatDistanceToNow(new Date(proposal.submitted_at), { addSuffix: true })}
+                          {formatDistanceToNow(safeDate(proposal.submitted_at), { addSuffix: true })}
                         </span>
                         {proposal.evaluation_score > 0 && (
                           <span className="ml-auto text-xs font-semibold text-primary-600 dark:text-primary-400">
@@ -385,7 +390,7 @@ const StartupProposals: React.FC = () => {
                   <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 pt-3 border-t border-slate-100 dark:border-slate-800 flex-wrap">
                     <span className="flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> ₹{(proposal.cost / 100000).toFixed(1)}L</span>
                     <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {proposal.timeline}</span>
-                    <span className="flex items-center gap-1 ml-auto"><Calendar className="w-3.5 h-3.5" /> {formatDistanceToNow(new Date(proposal.submitted_at), { addSuffix: true })}</span>
+                    <span className="flex items-center gap-1 ml-auto"><Calendar className="w-3.5 h-3.5" /> {formatDistanceToNow(safeDate(proposal.submitted_at), { addSuffix: true })}</span>
                   </div>
 
                   {proposal.evaluation_score > 0 && (
