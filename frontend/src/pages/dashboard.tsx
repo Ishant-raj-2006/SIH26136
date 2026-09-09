@@ -128,7 +128,7 @@ const DepartmentDashboard: React.FC<{ stats: any; loading: boolean; challenges: 
         ) : (
           <>
             <StatCard label="Active Challenges"  value={stats?.challenges ?? 0}      icon={<ClipboardList className="w-5 h-5" />} gradient="from-blue-500 to-cyan-500" />
-            <StatCard label="Proposals Received" value={stats?.proposals ?? 0}       icon={<MessagesSquareIcon />}               gradient="from-violet-500 to-purple-500" />
+            <StatCard label="Proposals Received" value={stats?.proposals ?? 0}       icon={<MessagesSquare className="w-5 h-5" />}               gradient="from-violet-500 to-purple-500" />
             <StatCard label="Running Pilots"     value={stats?.pilots ?? 0}          icon={<FlaskConical className="w-5 h-5" />} gradient="from-amber-500 to-orange-500" />
             <StatCard label="Budget Allocated"   value={`₹${((stats?.total_budget ?? 0) / 100000).toFixed(0)}L`} icon={<DollarSign className="w-5 h-5" />} gradient="from-emerald-500 to-green-500" sub="Total across challenges" />
           </>
@@ -300,8 +300,8 @@ const StartupDashboard: React.FC<{ stats: any; loading: boolean; challenges: any
           Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
         ) : (
           <>
-            <StatCard label="Proposals Sent"   value={stats?.proposals ?? 0}   icon={<MessagesSquareIcon />}             gradient="from-blue-500 to-cyan-500"     />
-            <StatCard label="Shortlisted"       value={0}                        icon={<Star className="w-5 h-5" />}       gradient="from-violet-500 to-purple-500" sub="proposals shortlisted" />
+            <StatCard label="Available Challenges" value={challenges.length}         icon={<ClipboardList className="w-5 h-5" />} gradient="from-blue-500 to-cyan-500"     />
+            <StatCard label="Proposals Sent"    value={stats?.proposals ?? 0}        icon={<MessagesSquare className="w-5 h-5" />}       gradient="from-violet-500 to-purple-500" />
             <StatCard label="Active Pilots"     value={stats?.pilots ?? 0}       icon={<FlaskConical className="w-5 h-5" />} gradient="from-amber-500 to-orange-500" />
             <StatCard label="Profile Score"     value={`${verificationScore.toFixed(1)}/10`} icon={<Target className="w-5 h-5" />} gradient="from-emerald-500 to-green-500" />
           </>
