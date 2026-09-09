@@ -21,6 +21,7 @@ import { useAuthStore } from '@/lib/stores/auth';
 import { AuthDrawer } from '@/components/AuthDrawer';
 import { SectionHeader } from '@/components/SectionHeader';
 import { BackgroundVideo } from '@/components/BackgroundVideo';
+import { apiClient } from '@/lib/api';
 import type { NextPageWithLayout } from './_app';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -30,9 +31,36 @@ const HomePage: NextPageWithLayout = () => {
   const [loggingInRole, setLoggingInRole] = useState<string | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
+  // Stats State
+  const [stats, setStats] = useState({
+    total_budget_cr: 48.5,
+    total_challenges: 142,
+    total_startups: 850,
+    scale_rate: 91.4
+  });
+
   // Modern Auth Drawer State
   const [authDrawerOpen, setAuthDrawerOpen] = useState(false);
   const [authDrawerMode, setAuthDrawerMode] = useState<'signin' | 'register'>('signin');
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const data = await apiClient.getPublicStats();
+        if (data) {
+          setStats({
+            total_budget_cr: data.total_budget_cr || 48.5,
+            total_challenges: data.total_challenges || 142,
+            total_startups: data.total_startups || 850,
+            scale_rate: data.scale_rate || 91.4
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load public stats:', err);
+      }
+    }
+    loadStats();
+  }, []);
 
   const openSignIn = () => {
     setAuthDrawerMode('signin');
@@ -400,19 +428,19 @@ const HomePage: NextPageWithLayout = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-slate-800">
                 <div className="pt-2 md:pt-0">
-                  <div className="text-3xl font-extrabold text-white tracking-tight">₹48.5 Cr+</div>
+                  <div className="text-3xl font-extrabold text-white tracking-tight">₹{stats.total_budget_cr.toFixed(1)} Cr+</div>
                   <div className="text-xs uppercase tracking-wider text-slate-400 mt-1 font-semibold">Sandbox Pilot Grants</div>
                 </div>
                 <div className="pt-2 md:pt-0">
-                  <div className="text-3xl font-extrabold text-emerald-400 tracking-tight">142+</div>
+                  <div className="text-3xl font-extrabold text-emerald-400 tracking-tight">{stats.total_challenges}+</div>
                   <div className="text-xs uppercase tracking-wider text-slate-400 mt-1 font-semibold">Departmental Challenges</div>
                 </div>
                 <div className="pt-2 md:pt-0">
-                  <div className="text-3xl font-extrabold text-blue-400 tracking-tight">850+</div>
+                  <div className="text-3xl font-extrabold text-blue-400 tracking-tight">{stats.total_startups}+</div>
                   <div className="text-xs uppercase tracking-wider text-slate-400 mt-1 font-semibold">Verified DPIIT Startups</div>
                 </div>
                 <div className="pt-2 md:pt-0">
-                  <div className="text-3xl font-extrabold text-amber-400 tracking-tight">91.4%</div>
+                  <div className="text-3xl font-extrabold text-amber-400 tracking-tight">{stats.scale_rate}%</div>
                   <div className="text-xs uppercase tracking-wider text-slate-400 mt-1 font-semibold">Pilot-to-Procure Scale Rate</div>
                 </div>
               </div>

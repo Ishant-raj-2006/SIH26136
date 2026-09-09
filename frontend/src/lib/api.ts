@@ -346,6 +346,14 @@ class APIClient {
   }
 
   // =========================
+  // Public Stats
+  // =========================
+  async getPublicStats() {
+    const response = await this.client.get('/api/public/stats');
+    return response.data;
+  }
+
+  // =========================
   // Auth endpoints
   // =========================
 

@@ -11,6 +11,12 @@ class UserRole(str, Enum):
     ADMIN = "admin"
     MAINTENANCE = "maintenance"
 
+class PublicStats(BaseModel):
+    total_budget_cr: float
+    total_challenges: int
+    total_startups: int
+    scale_rate: float
+
 # User Schemas
 class UserCreate(BaseModel):
     email: EmailStr
