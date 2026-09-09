@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Loader2 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { Button } from './UI/Button';
+import { Button } from './UI';
 import type { ProgressUpdate } from '@/types';
 import { format } from 'date-fns';
 import { useAuthStore } from '@/lib/stores/auth';
