@@ -606,6 +606,20 @@ class APIClient {
     return response.data;
   }
 
+  async getMyProposals(skip: number = 0, limit: number = 10) {
+    const response = await this.client.get('/api/proposals/me', {
+      params: { skip, limit },
+    });
+    return response.data;
+  }
+
+  async getMyProposalForChallenge(challengeId: number) {
+    const response = await this.client.get(
+      `/api/challenges/${challengeId}/my_proposal`
+    );
+    return response.data;
+  }
+
   async getProposalMessages(proposalId: number) {
     const response = await this.client.get(
       `/api/proposals/${proposalId}/messages`

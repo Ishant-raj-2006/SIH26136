@@ -918,6 +918,55 @@ def create_proposal(proposal_data: schemas.ProposalCreate,
     
     return db_proposal
 
+@app.get("/api/proposals/me", response_model=dict)
+def get_user_proposals(skip: int = Query(0), limit: int = Query(10), email: str = Depends(auth.verify_token), db: Session = Depends(get_db)):
+    """Get all proposals for the currently logged in startup"""
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user or user.role != "startup":
+        raise HTTPException(status_code=403, detail="Only startups can view their own proposals here")
+        
+    startup = db.query(models.Startup).filter(models.Startup.user_id == user.id).first()
+    if not startup:
+        raise HTTPException(status_code=404, detail="Startup profile not found")
+        
+    query = db.query(models.Proposal).filter(models.Proposal.startup_id == startup.id)
+    total = query.count()
+    proposals = query.offset(skip).limit(limit).all()
+    
+    proposal_data = []
+    for p in proposals:
+        p_dict = schemas.ProposalResponse.model_validate(p).model_dump()
+        p_dict["startup_name"] = startup.name
+        proposal_data.append(p_dict)
+    
+    return {
+        "data": proposal_data,
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "pages": math.ceil(total / limit) if limit > 0 else 1
+    }
+
+@app.get("/api/challenges/{challenge_id}/my_proposal", response_model=Optional[schemas.ProposalResponse])
+def get_my_challenge_proposal(challenge_id: int, email: str = Depends(auth.verify_token), db: Session = Depends(get_db)):
+    """Get the startup's proposal for a specific challenge, if any"""
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user or user.role != "startup":
+        return None
+        
+    startup = db.query(models.Startup).filter(models.Startup.user_id == user.id).first()
+    if not startup:
+        return None
+        
+    proposal = db.query(models.Proposal).filter(models.Proposal.challenge_id == challenge_id, models.Proposal.startup_id == startup.id).first()
+    if proposal:
+        # Add startup name before returning
+        p_dict = schemas.ProposalResponse.model_validate(proposal).model_dump()
+        p_dict["startup_name"] = startup.name
+        return schemas.ProposalResponse(**p_dict)
+    
+    return None
+
 @app.get("/api/proposals/{proposal_id}", response_model=schemas.ProposalResponse)
 def get_proposal(proposal_id: int, db: Session = Depends(get_db)):
     """Get proposal details"""

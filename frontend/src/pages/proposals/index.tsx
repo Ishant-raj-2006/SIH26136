@@ -334,7 +334,7 @@ const StartupProposals: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await apiClient.getChallengeProposals(0, 0, 50);
+        const res = await apiClient.getMyProposals();
         setProposals(Array.isArray(res) ? res : res.data || []);
       } catch {
         setError('Could not load proposals.');

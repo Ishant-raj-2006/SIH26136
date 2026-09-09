@@ -106,6 +106,9 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
   const [proposalsLoading, setProposalsLoading] = useState(false);
   const [chatProposalId, setChatProposalId] = useState<number | null>(null);
   const [chatTitle, setChatTitle] = useState<string>('');
+  
+  // Startup view: check if already applied
+  const [myProposal, setMyProposal] = useState<Proposal | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -153,6 +156,16 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
           setProposals([]);
         } finally {
           setProposalsLoading(false);
+        }
+      }
+
+      // If user is startup, fetch their existing proposal for this challenge (if any)
+      if (user?.role === 'startup') {
+        try {
+          const res = await apiClient.getMyProposalForChallenge(challengeId);
+          setMyProposal(res || null);
+        } catch (e) {
+          setMyProposal(null);
         }
       }
     }
@@ -637,44 +650,77 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
 
         {/* Right Column: Sovereign Legal & Apply Card */}
         <div className="space-y-6">
-          {/* Apply Box for Startups */}
           {user?.role === 'startup' ? (
-            <Card className="p-6 border-2 border-primary-500/30 bg-primary-50/20 dark:bg-primary-950/20 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400">
-                  <Sparkles className="w-5 h-5" />
+            myProposal ? (
+              <Card className="p-6 border-2 border-primary-500/30 bg-primary-50/20 dark:bg-primary-950/20 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white">Proposal Submitted</h3>
+                    <p className="text-xs text-slate-500">You have already applied for this challenge.</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white">Submit Sandbox Proposal</h3>
-                  <p className="text-xs text-slate-500">Fast-track pilot approval under SIH26136</p>
-                </div>
-              </div>
 
-              <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-500" />
-                  <span>Prior turnover criteria fully exempted</span>
+                <div className="p-4 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Status:</span>
+                  <Badge variant={myProposal.status === 'accepted' ? 'success' : myProposal.status === 'rejected' ? 'danger' : myProposal.status === 'under_review' ? 'warning' : 'primary'}>
+                    {myProposal.status.replace('_', ' ')}
+                  </Badge>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-500" />
-                  <span>Prior tender experience waived (DPIIT)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-500" />
-                  <span>Escrow milestone tranches protected</span>
-                </div>
-              </div>
 
-              <Button
-                variant="primary"
-                size="lg"
-                className="w-full justify-center shadow-lg shadow-primary-500/20"
-                onClick={handleOpenProposalModal}
-              >
-                <Send className="w-4 h-4 mr-2" />
-                Apply / Submit Proposal
-              </Button>
-            </Card>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full justify-center flex items-center gap-2 border-primary-200 hover:bg-primary-50 dark:hover:bg-primary-900/20 text-primary-600"
+                  onClick={() => {
+                    setChatProposalId(myProposal.id);
+                    setChatTitle(`Chat with Department`);
+                  }}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Open Chat
+                </Button>
+              </Card>
+            ) : (
+              <Card className="p-6 border-2 border-primary-500/30 bg-primary-50/20 dark:bg-primary-950/20 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white">Submit Sandbox Proposal</h3>
+                    <p className="text-xs text-slate-500">Fast-track pilot approval under SIH26136</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-emerald-500" />
+                    <span>Prior turnover criteria fully exempted</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-emerald-500" />
+                    <span>Prior tender experience waived (DPIIT)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-emerald-500" />
+                    <span>Escrow milestone tranches protected</span>
+                  </div>
+                </div>
+
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="w-full justify-center shadow-lg shadow-primary-500/20"
+                  onClick={handleOpenProposalModal}
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Apply / Submit Proposal
+                </Button>
+              </Card>
+            )
           ) : !user ? (
             <Card className="p-6 border border-slate-200 dark:border-slate-800 space-y-4 text-center">
               <h3 className="font-bold text-slate-900 dark:text-white">Are you an innovative startup?</h3>
