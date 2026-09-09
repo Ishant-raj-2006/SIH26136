@@ -59,7 +59,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
   isOpen,
   onClose,
   initialMode = 'signin',
-  defaultRole = 'startup'
+  defaultRole
 }) => {
   const router = useRouter();
   const { login, register, clearError } = useAuthStore();
@@ -83,7 +83,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
     password: '',
     confirmPassword: '',
     full_name: '',
-    role: defaultRole,
+    role: defaultRole || 'startup',
     organization: '',
     department: 'Ministry of Electronics & Information Technology (MeitY)',
     agreeTerms: true
