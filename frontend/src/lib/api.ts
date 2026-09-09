@@ -628,6 +628,14 @@ class APIClient {
     return response.data;
   }
 
+  async updateProposalStatus(proposalId: number, status: string) {
+    const response = await this.client.put(
+      `/api/proposals/${proposalId}/status`,
+      { status }
+    );
+    return response.data;
+  }
+
   // =========================
   // Evaluation endpoints
   // =========================

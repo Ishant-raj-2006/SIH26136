@@ -231,6 +231,9 @@ class ProposalCreate(BaseModel):
     cost: float
     risk_mitigation: Optional[str] = "Standard GFR 194 compliance risk mitigation and sandbox isolation."
 
+class ProposalStatusUpdate(BaseModel):
+    status: str
+
 class ProposalResponse(BaseModel):
     id: int
     startup_id: int

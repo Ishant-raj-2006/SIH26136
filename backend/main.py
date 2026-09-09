@@ -1007,6 +1007,36 @@ def create_proposal_message(proposal_id: int, message_data: schemas.MessageCreat
         
     return message
 
+@app.put("/api/proposals/{proposal_id}/status", response_model=schemas.ProposalResponse)
+def update_proposal_status(proposal_id: int, status_update: schemas.ProposalStatusUpdate, email: str = Depends(auth.verify_token), db: Session = Depends(get_db)):
+    """Update proposal status"""
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user or user.role not in ["department", "ministry", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    proposal = db.query(models.Proposal).filter(models.Proposal.id == proposal_id).first()
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+        
+    proposal.status = status_update.status
+    db.commit()
+    db.refresh(proposal)
+    
+    # Notify startup
+    startup = db.query(models.Startup).filter(models.Startup.id == proposal.startup_id).first()
+    if startup:
+        notification = models.Notification(
+            user_id=startup.user_id,
+            title="Proposal Status Updated",
+            message=f"Your proposal '{proposal.title}' status was updated to {status_update.status}",
+            type="status_update",
+            related_id=proposal.id
+        )
+        db.add(notification)
+        db.commit()
+        
+    return proposal
+
 @app.post("/api/proposals/{proposal_id}/accept", response_model=schemas.ProposalResponse)
 def accept_proposal(proposal_id: int, email: str = Depends(auth.verify_token), db: Session = Depends(get_db)):
     """Accept a proposal and create a pilot"""

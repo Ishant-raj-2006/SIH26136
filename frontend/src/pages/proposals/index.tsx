@@ -15,6 +15,7 @@ import { ProposalChat } from '@/components/ProposalChat';
 import { formatDistanceToNow } from 'date-fns';
 import type { Proposal } from '@/types';
 import type { NextPageWithLayout } from '../_app';
+import toast from 'react-hot-toast';
 
 const safeDate = (d: any) => {
   const date = new Date(d);
@@ -89,8 +90,21 @@ const DepartmentProposals: React.FC = () => {
     try {
       await apiClient.acceptProposal(id);
       setProposals(proposals.map(p => p.id === id ? { ...p, status: 'accepted' } : p));
+      toast.success('Proposal accepted and Pilot created!');
     } catch (err) {
       console.error('Failed to accept proposal', err);
+      toast.error('Failed to accept proposal');
+    }
+  };
+
+  const handleUpdateStatus = async (id: number, status: string) => {
+    try {
+      await apiClient.updateProposalStatus(id, status);
+      setProposals(proposals.map(p => p.id === id ? { ...p, status } : p));
+      toast.success(`Proposal marked as ${status.replace('_', ' ')}`);
+    } catch (err) {
+      console.error('Failed to update status', err);
+      toast.error('Failed to update status');
     }
   };
 
@@ -246,8 +260,26 @@ const DepartmentProposals: React.FC = () => {
                         <Eye className="w-3.5 h-3.5" /> View Challenge
                       </Button>
                     </Link>
-                    {(proposal.status === 'submitted' || proposal.status === 'under_review') && user?.role !== 'ministry' ? (
+                    {(proposal.status === 'submitted' || proposal.status === 'under_review' || proposal.status === 'shortlisted') && user?.role !== 'ministry' ? (
                       <>
+                        {proposal.status === 'submitted' && (
+                          <Button 
+                            variant="outline" size="sm" 
+                            onClick={() => handleUpdateStatus(proposal.id, 'under_review')}
+                            className="text-amber-600 border-amber-200 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                          >
+                            Reviewing
+                          </Button>
+                        )}
+                        {proposal.status === 'under_review' && (
+                          <Button 
+                            variant="outline" size="sm" 
+                            onClick={() => handleUpdateStatus(proposal.id, 'shortlisted')}
+                            className="text-sky-600 border-sky-200 hover:bg-sky-50 dark:hover:bg-sky-900/20"
+                          >
+                            Shortlist
+                          </Button>
+                        )}
                         <Button 
                           variant="outline" 
                           size="sm" 
@@ -256,7 +288,12 @@ const DepartmentProposals: React.FC = () => {
                         >
                           <Check className="w-3.5 h-3.5" /> Accept
                         </Button>
-                        <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs text-red-500 border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleUpdateStatus(proposal.id, 'rejected')}
+                          className="flex items-center gap-1 text-xs text-red-500 border-red-200 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
                           <X className="w-3.5 h-3.5" /> Reject
                         </Button>
                       </>
