@@ -866,10 +866,9 @@ def delete_challenge(challenge_id: int,
         raise HTTPException(status_code=404, detail="Challenge not found")
         
     is_admin = user and (user.role == models.UserRole.ADMIN or user.role == "admin")
-    is_dept = user and (user.role == models.UserRole.DEPARTMENT or user.role == "department")
     is_creator = user and challenge.creator_id == user.id
 
-    if not (is_creator or is_dept or is_admin):
+    if not (is_creator or is_admin):
         raise HTTPException(status_code=403, detail="Not authorized to delete this challenge")
         
     db.delete(challenge)
