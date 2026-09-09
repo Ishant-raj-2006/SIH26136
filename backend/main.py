@@ -209,6 +209,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 @app.get("/")
+@app.head("/")
 def root():
     """Root endpoint for platform health and metadata"""
     return {
