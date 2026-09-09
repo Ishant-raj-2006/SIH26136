@@ -39,6 +39,7 @@ const entityCategories = [
   { id: 'startup', label: '🚀 Startup', email: 'startup@procurement.com', pass: 'Startup@123', desc: 'DPIIT Exempt' },
   { id: 'company', label: '🏢 Company', email: 'company@procurement.com', pass: 'Company@123', desc: 'Enterprise' },
   { id: 'department', label: '🏛️ Department', email: 'government@procurement.com', pass: 'Government@123', desc: 'Public Buyer' },
+  { id: 'ministry', label: '👁️ Ministry', email: 'ministry@procurement.com', pass: 'Ministry@123', desc: 'Read-Only Overseer' },
   { id: 'maintenance', label: '🔧 Maintenance', email: 'maintenance@procurement.com', pass: 'Maintenance@123', desc: 'Platform Ops' },
 ];
 
@@ -145,6 +146,17 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
     setForgotOtpSent(false);
   }, [initialMode, isOpen, clearError]);
 
+  // Auto-select the defaultRole when the drawer opens
+  useEffect(() => {
+    if (defaultRole && isOpen) {
+      const cat = entityCategories.find(c => c.id === defaultRole) || entityCategories[0];
+      setSelectedEntity(cat.id);
+      setSignInEmail(cat.email);
+      setSignInPassword(cat.pass);
+      setRegData(prev => ({ ...prev, role: cat.id }));
+    }
+  }, [defaultRole, isOpen]);
+
   // Handle ESC key to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -182,12 +194,19 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
 
     try {
       await login(signInEmail.trim(), signInPassword.trim());
+
+      const loggedUser = useAuthStore.getState().user;
+      const userRole = loggedUser?.role?.toLowerCase() || '';
+
+      if (defaultRole && defaultRole !== userRole) {
+         useAuthStore.getState().logout();
+         throw new Error(`Access Denied! You are trying to login as a ${userRole.toUpperCase()} on a ${defaultRole.toUpperCase()} portal.`);
+      }
+
       toast.success('Sign in successful! Redirecting to workspace...');
       onClose();
 
       // Role-Based Smart Page Redirect
-      const loggedUser = useAuthStore.getState().user;
-      const userRole = loggedUser?.role?.toLowerCase() || '';
 
       if (userRole === 'department') {
         router.push('/dashboard');
@@ -390,16 +409,27 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/90">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-700 to-indigo-800 flex items-center justify-center text-amber-300 shadow-md shadow-blue-900/20 border border-blue-600/30">
-                  <Building2 className="w-5.5 h-5.5" />
+                  {selectedEntity === 'department' ? <Landmark className="w-5.5 h-5.5" /> : 
+                   selectedEntity === 'ministry' ? <Eye className="w-5.5 h-5.5" /> :
+                   selectedEntity === 'maintenance' ? <Wrench className="w-5.5 h-5.5" /> : 
+                   <Rocket className="w-5.5 h-5.5" />}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-extrabold text-slate-900 tracking-tight">GoPilot-X</h3>
                     <span className="text-[10px] uppercase font-extrabold bg-blue-100 text-blue-900 px-2 py-0.5 rounded-full border border-blue-200">
-                      SANDBOX
+                      {selectedEntity === 'department' ? 'GOVERNMENT' : 
+                       selectedEntity === 'ministry' ? 'MINISTRY OVERSEER' :
+                       selectedEntity === 'maintenance' ? 'PLATFORM OPS' : 
+                       'SANDBOX'}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 font-medium">National Startup Public Procurement Access</p>
+                  <p className="text-xs text-slate-500 font-medium">
+                    {selectedEntity === 'department' ? 'Department & Ministry Public Buyer Portal' : 
+                     selectedEntity === 'ministry' ? 'Ministry Read-Only Oversight Portal' :
+                     selectedEntity === 'maintenance' ? 'Platform Maintenance & Administration' : 
+                     'National Startup Public Procurement Access'}
+                  </p>
                 </div>
               </div>
 
@@ -422,42 +452,34 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
                     setLocalError(null);
                   }}
                   className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    mode === 'signin'
+                    (mode === 'signin' || mode === 'forgot_password')
                       ? 'bg-white text-blue-950 shadow-md shadow-slate-200/80 border border-slate-200/80'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Sign In
+                  {mode === 'forgot_password' ? '← Back to Sign In' : 'Sign In'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('register');
-                    setLocalError(null);
-                    setRegOtpStep(false);
-                  }}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    mode === 'register'
-                      ? 'bg-white text-blue-950 shadow-md shadow-slate-200/80 border border-slate-200/80'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Register Entity
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('clerk');
-                    setLocalError(null);
-                  }}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    mode === 'clerk'
-                      ? 'bg-slate-900 text-amber-300 shadow-md shadow-slate-900/20 border border-slate-800'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Clerk Login ⚡
-                </button>
+                
+                {(!defaultRole || defaultRole === 'startup') && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode('register');
+                        setLocalError(null);
+                        setRegOtpStep(false);
+                      }}
+                      className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                        mode === 'register'
+                          ? 'bg-white text-blue-950 shadow-md shadow-slate-200/80 border border-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Register Entity
+                    </button>
+
+                  </>
+                )}
               </div>
             </div>
 
@@ -478,69 +500,37 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
               {/* ================= SIGN IN TAB ================= */}
               {mode === 'signin' && (
                 <form onSubmit={handleSignInSubmit} className="space-y-3.5">
-                  {/* Clerk Google OAuth Integration TOP */}
-                  <button
-                    type="button"
-                    onClick={handleClerkGoogleAuth}
-                    className="w-full py-3.5 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-2.5 transition-all border border-slate-800 hover:scale-[1.01] active:scale-[0.99]"
-                  >
-                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                      <path
-                        fill="#EA4335"
-                        d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.3 8.9 5 12 5z"
-                      />
-                      <path
-                        fill="#4285F4"
-                        d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.6 7.2C.6 9.2 0 11.5 0 14s.6 4.8 1.6 6.8l3.7-2.9z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.3-6.7-5.3L1.6 16C3.5 19.8 7.4 23 12 23z"
-                      />
-                    </svg>
-                    <span>One-Click Sign In with Google (Clerk SSO)</span>
-                  </button>
 
-                  <div className="relative my-2">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-slate-200" />
-                    </div>
-                    <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
-                      <span className="bg-white px-3 text-slate-400">Or Enter Password Credentials</span>
-                    </div>
-                  </div>
 
-                  {/* Entity Category Selector */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                      Select Account Type / Category:
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {entityCategories.map((cat) => {
-                        const isSelected = selectedEntity === cat.id;
+                  {/* Entity Category Selector (Hidden if accessed via subdomain direct link) */}
+                  {!defaultRole && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Select Account Type / Category:
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {entityCategories.map((cat) => {
+                          const isSelected = selectedEntity === cat.id;
 
-                        return (
-                          <button
-                            key={cat.id}
-                            type="button"
-                            onClick={() => handleSelectRole(cat)}
-                            className={`p-2 rounded-xl border text-center transition-all ${
-                              isSelected
-                                ? 'bg-blue-50/90 border-blue-600 text-blue-950 font-bold shadow-md shadow-blue-600/10 ring-2 ring-blue-600/20'
-                                : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/60'
-                            }`}
-                          >
-                            <div className="text-xs font-bold truncate">{cat.label}</div>
-                            <div className="text-[10px] text-slate-500 font-normal truncate mt-0.5">{cat.desc}</div>
-                          </button>
-                        );
-                      })}
+                          return (
+                            <button
+                              key={cat.id}
+                              type="button"
+                              onClick={() => handleSelectRole(cat)}
+                              className={`p-2 rounded-xl border text-center transition-all ${
+                                isSelected
+                                  ? 'bg-blue-50/90 border-blue-600 text-blue-950 font-bold shadow-md shadow-blue-600/10 ring-2 ring-blue-600/20'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50/60'
+                              }`}
+                            >
+                              <div className="text-xs font-bold truncate">{cat.label}</div>
+                              <div className="text-[10px] text-slate-500 font-normal truncate mt-0.5">{cat.desc}</div>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Email Input */}
                   <div>
@@ -623,31 +613,33 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
                     )}
                   </button>
 
-                  <div className="text-center pt-1 space-y-1">
-                    <div>
-                      <span className="text-xs text-slate-500 font-medium">New Company or Startup? </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onClose();
-                          router.push('/register/company');
-                        }}
-                        className="text-xs font-extrabold text-emerald-700 hover:text-emerald-800 hover:underline transition-colors"
-                      >
-                        🏢 Complete 3-Step Company Registration
-                      </button>
+                  {!defaultRole && (
+                    <div className="text-center pt-1 space-y-1">
+                      <div>
+                        <span className="text-xs text-slate-500 font-medium">New Company or Startup? </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onClose();
+                            router.push('/register/company');
+                          }}
+                          className="text-xs font-extrabold text-emerald-700 hover:text-emerald-800 hover:underline transition-colors"
+                        >
+                          🏢 Complete 3-Step Company Registration
+                        </button>
+                      </div>
+                      <div>
+                        <span className="text-xs text-slate-500 font-medium">Quick account setup: </span>
+                        <button
+                          type="button"
+                          onClick={() => setMode('register')}
+                          className="text-xs font-bold text-blue-700 hover:text-blue-800 hover:underline transition-colors"
+                        >
+                          Quick Register
+                        </button>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-xs text-slate-500 font-medium">Quick account setup: </span>
-                      <button
-                        type="button"
-                        onClick={() => setMode('register')}
-                        className="text-xs font-bold text-blue-700 hover:text-blue-800 hover:underline transition-colors"
-                      >
-                        Quick Register
-                      </button>
-                    </div>
-                  </div>
+                  )}
                 </form>
               )}
 
@@ -656,77 +648,45 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
                 <div>
                   {!regOtpStep ? (
                     <form onSubmit={handleSendRegOTP} className="space-y-3.5">
-                      {/* Clerk Quick Register Button TOP */}
-                      <button
-                        type="button"
-                        onClick={handleClerkGoogleAuth}
-                        className="w-full py-3.5 px-4 rounded-2xl bg-emerald-950 hover:bg-emerald-900 text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-2.5 transition-all border border-emerald-800 hover:scale-[1.01] active:scale-[0.99]"
-                      >
-                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                          <path
-                            fill="#EA4335"
-                            d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.3 8.9 5 12 5z"
-                          />
-                          <path
-                            fill="#4285F4"
-                            d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"
-                          />
-                          <path
-                            fill="#FBBC05"
-                            d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.6 7.2C.6 9.2 0 11.5 0 14s.6 4.8 1.6 6.8l3.7-2.9z"
-                          />
-                          <path
-                            fill="#34A853"
-                            d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.3-6.7-5.3L1.6 16C3.5 19.8 7.4 23 12 23z"
-                          />
-                        </svg>
-                        <span>One-Click Register with Google (Clerk OAuth)</span>
-                      </button>
 
-                      <div className="relative my-2">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-slate-200" />
-                        </div>
-                        <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
-                          <span className="bg-white px-3 text-slate-400">Or Register With Email OTP</span>
-                        </div>
-                      </div>
 
-                      {/* Account Type / Role */}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                          Participating Entity Category
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setRegData({ ...regData, role: 'startup' })}
-                            className={`p-2.5 rounded-xl border text-left transition-all ${
-                              regData.role === 'startup'
-                                ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-bold shadow-md shadow-emerald-500/10 ring-2 ring-emerald-500/20'
-                                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                            }`}
-                          >
-                            <Rocket className="w-3.5 h-3.5 text-emerald-600 mb-0.5" />
-                            <div className="text-xs font-bold">Startup / Company</div>
-                            <div className="text-[10px] text-slate-500">DPIIT Exempt</div>
-                          </button>
+                      {/* Account Type / Role (Hidden if accessed via subdomain direct link) */}
+                      {!defaultRole && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Participating Entity Category
+                          </label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setRegData({ ...regData, role: 'startup' })}
+                              className={`p-2.5 rounded-xl border text-left transition-all ${
+                                regData.role === 'startup'
+                                  ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-bold shadow-md shadow-emerald-500/10 ring-2 ring-emerald-500/20'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                              }`}
+                            >
+                              <Rocket className="w-3.5 h-3.5 text-emerald-600 mb-0.5" />
+                              <div className="text-xs font-bold">Startup / Company</div>
+                              <div className="text-[10px] text-slate-500">DPIIT Exempt</div>
+                            </button>
 
-                          <button
-                            type="button"
-                            onClick={() => setRegData({ ...regData, role: 'department' })}
-                            className={`p-2.5 rounded-xl border text-left transition-all ${
-                              regData.role === 'department'
-                                ? 'bg-amber-50 border-amber-500 text-amber-950 font-bold shadow-md shadow-amber-500/10 ring-2 ring-amber-500/20'
-                                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                            }`}
-                          >
-                            <Building2 className="w-3.5 h-3.5 text-amber-600 mb-0.5" />
-                            <div className="text-xs font-bold">Department / Ministry</div>
-                            <div className="text-[10px] text-slate-500">Public Buyer</div>
-                          </button>
+                            <button
+                              type="button"
+                              onClick={() => setRegData({ ...regData, role: 'department' })}
+                              className={`p-2.5 rounded-xl border text-left transition-all ${
+                                regData.role === 'department'
+                                  ? 'bg-amber-50 border-amber-500 text-amber-950 font-bold shadow-md shadow-amber-500/10 ring-2 ring-amber-500/20'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                              }`}
+                            >
+                              <Building2 className="w-3.5 h-3.5 text-amber-600 mb-0.5" />
+                              <div className="text-xs font-bold">Department / Ministry</div>
+                              <div className="text-[10px] text-slate-500">Public Buyer</div>
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Select Department / Ministry Connection */}
                       <div>
@@ -970,119 +930,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
                 </div>
               )}
 
-              {/* ================= CLERK AUTH TAB ================= */}
-              {mode === 'clerk' && (
-                <div className="space-y-4 py-2">
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 text-white space-y-2.5 shadow-xl border border-indigo-800/40">
-                    <div className="flex items-center gap-2 font-bold text-sm text-amber-300">
-                      <Sparkles className="w-5 h-5 text-amber-300 animate-pulse" />
-                      Clerk Single Sign-On (SSO) & Google Auth
-                    </div>
-                    <p className="text-xs text-slate-300 leading-relaxed font-normal">
-                      Authenticate securely using Clerk OAuth credentials or Google account. Your platform identity and department connection will be automatically synced.
-                    </p>
-                  </div>
 
-                  {/* Account Type / Role */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                      Participating Entity Category
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {entityCategories.map((cat) => {
-                        const isSelected = selectedEntity === cat.id;
-                        return (
-                          <button
-                            key={cat.id}
-                            type="button"
-                            onClick={() => setSelectedEntity(cat.id)}
-                            className={`p-2.5 rounded-2xl border text-center transition-all ${
-                              isSelected
-                                ? 'bg-blue-50/90 border-blue-600 text-blue-950 font-bold shadow-md shadow-blue-600/10 ring-2 ring-blue-600/20'
-                                : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
-                            }`}
-                          >
-                            <div className="text-xs font-bold truncate">{cat.label}</div>
-                            <div className="text-[10px] text-slate-500 font-normal truncate mt-0.5">{cat.desc}</div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Select Department / Ministry Connection */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                      Select Department / Ministry Connection 🏛️
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <Landmark className="w-3.5 h-3.5" />
-                      </div>
-                      <select
-                        value={regData.department}
-                        onChange={(e) => setRegData({ ...regData, department: e.target.value })}
-                        className="w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-semibold focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 transition-all appearance-none"
-                      >
-                        {departmentOptions.map((dept, idx) => (
-                          <option key={idx} value={dept}>
-                            {dept}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Clerk Google OAuth Button */}
-                  <button
-                    type="button"
-                    onClick={handleClerkGoogleAuth}
-                    disabled={isLoading}
-                    className="w-full py-4 px-5 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-800 to-slate-900 hover:from-blue-600 hover:to-indigo-700 text-white font-extrabold text-sm shadow-xl shadow-blue-900/25 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
-                  >
-                    {isLoading ? (
-                      <RefreshCw className="w-5 h-5 animate-spin text-white" />
-                    ) : (
-                      <>
-                        <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                          <path
-                            fill="#EA4335"
-                            d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.3 8.9 5 12 5z"
-                          />
-                          <path
-                            fill="#4285F4"
-                            d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"
-                          />
-                          <path
-                            fill="#FBBC05"
-                            d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.6 7.2C.6 9.2 0 11.5 0 14s.6 4.8 1.6 6.8l3.7-2.9z"
-                          />
-                          <path
-                            fill="#34A853"
-                            d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.3-6.7-5.3L1.6 16C3.5 19.8 7.4 23 12 23z"
-                          />
-                        </svg>
-                        <span>Sign In with Google / Clerk SSO</span>
-                      </>
-                    )}
-                  </button>
-
-                  <div className="p-3 rounded-2xl bg-slate-100 border border-slate-200 flex items-center gap-2.5 text-xs text-slate-700 font-medium">
-                    <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
-                    <span>Protected under Clerk Authentication & Govt e-Security Standard</span>
-                  </div>
-
-                  <div className="text-center pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setMode('forgot_password')}
-                      className="text-xs font-semibold text-slate-500 hover:text-slate-800 hover:underline transition-colors"
-                    >
-                      Need standard password reset? Click here
-                    </button>
-                  </div>
-                </div>
-              )}
 
               {/* ================= FORGOT PASSWORD TAB ================= */}
               {mode === 'forgot_password' && (

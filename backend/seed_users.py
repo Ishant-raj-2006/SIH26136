@@ -59,6 +59,14 @@ users = [
         "organization": "Platform Operations"
     },
     {
+        "email": "ministry@procurement.com",
+        "username": "ministry_user",
+        "password": "Ministry@123",
+        "full_name": "Ministry Overseer",
+        "role": models.UserRole.MINISTRY,
+        "organization": "Ministry of Electronics and Information Technology"
+    },
+    {
         "email": "dept@example.com",
         "username": "dept_demo",
         "password": "password123",

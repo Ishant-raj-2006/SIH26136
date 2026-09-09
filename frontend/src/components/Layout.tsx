@@ -26,6 +26,29 @@ export const Layout: React.FC<LayoutProps> = ({ children, requireAuth = true }) 
     }
   }, [user, isLoading, requireAuth, router, getCurrentUser]);
 
+  // Enforce subdomain access control
+  useEffect(() => {
+    if (user && !isLoading && requireAuth) {
+      const hostname = window.location.hostname;
+      const subdomain = hostname.split('.')[0];
+      const role = user.role?.toLowerCase() || '';
+
+      const isSubdomainMatch = 
+        (subdomain === 'startup' && role === 'startup') ||
+        (subdomain === 'ministry' && role === 'ministry') ||
+        (subdomain === 'department' && role === 'department') ||
+        (subdomain === 'maintenance' && role === 'admin');
+
+      const isProtectedSubdomain = ['startup', 'ministry', 'department', 'maintenance'].includes(subdomain);
+
+      if (isProtectedSubdomain && !isSubdomainMatch) {
+        useAuthStore.getState().logout();
+        toast.error(`Access Denied! You cannot access the ${subdomain} portal with a ${role} account.`);
+        router.replace('/?auth=signin');
+      }
+    }
+  }, [user, isLoading, requireAuth, router]);
+
   if (requireAuth && isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-slate-900 dark:to-slate-950">

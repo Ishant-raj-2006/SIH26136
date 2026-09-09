@@ -302,7 +302,10 @@ class APIClient {
           this.clearToken();
 
           if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
-            window.location.href = '/?auth=signin';
+            const isAlreadySignin = window.location.pathname === '/' && window.location.search.includes('auth=signin');
+            if (!isAlreadySignin) {
+              window.location.href = '/?auth=signin';
+            }
           }
         }
 
@@ -327,7 +330,10 @@ class APIClient {
     this.clearToken();
 
     if (typeof window !== 'undefined') {
-      window.location.href = '/?auth=signin';
+      const isAlreadySignin = window.location.pathname === '/' && window.location.search.includes('auth=signin');
+      if (!isAlreadySignin) {
+        window.location.href = '/?auth=signin';
+      }
     }
   }
 

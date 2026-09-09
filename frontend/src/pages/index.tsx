@@ -64,6 +64,23 @@ const HomePage: NextPageWithLayout = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Reliably determine the default role from the subdomain synchronously on the client
+  const [clientDefaultRole, setClientDefaultRole] = useState<string | undefined>(() => {
+    if (typeof window !== 'undefined') {
+      const subdomain = window.location.hostname.split('.')[0];
+      if (['startup', 'ministry', 'department', 'maintenance'].includes(subdomain)) {
+        return subdomain;
+      }
+    }
+    return undefined;
+  });
+
+  useEffect(() => {
+    if (typeof router.query.role === 'string') {
+      setClientDefaultRole(router.query.role);
+    }
+  }, [router.query.role]);
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -98,6 +115,7 @@ const HomePage: NextPageWithLayout = () => {
         isOpen={authDrawerOpen}
         onClose={() => setAuthDrawerOpen(false)}
         initialMode={authDrawerMode}
+        defaultRole={clientDefaultRole}
       />
 
       {/* Top Header Navigation */}

@@ -578,8 +578,8 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
             </div>
           </Card>
 
-          {/* If department/evaluator: Proposals table */}
-          {(user?.role === 'department' || user?.role === 'evaluator') && (
+          {/* If department/ministry/evaluator: Proposals table */}
+          {(user?.role === 'department' || user?.role === 'ministry' || user?.role === 'evaluator') && (
             <Card className="p-6 sm:p-7 space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">

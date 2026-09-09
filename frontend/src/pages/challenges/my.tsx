@@ -258,12 +258,14 @@ const MyChallengesPage: NextPageWithLayout = () => {
             <RefreshCw className="w-4 h-4 mr-1.5" />
             Refresh
           </Button>
-          <Link href="/challenges/create">
-            <Button variant="primary" size="md" className="shadow-lg shadow-primary-500/20">
-              <Plus className="w-4 h-4 mr-2" />
-              Post New Problem
-            </Button>
-          </Link>
+          {user?.role !== 'ministry' && (
+            <Link href="/challenges/create">
+              <Button variant="primary" size="md" className="shadow-lg shadow-primary-500/20">
+                <Plus className="w-4 h-4 mr-2" />
+                Post New Problem
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -306,9 +308,11 @@ const MyChallengesPage: NextPageWithLayout = () => {
           <p className="text-xs text-slate-500 max-w-md mx-auto">
             You haven't posted any sandbox problems matching your filter yet. Click below to publish a new challenge.
           </p>
-          <Link href="/challenges/create">
-            <Button variant="primary">Post New Problem Statement</Button>
-          </Link>
+          {user?.role !== 'ministry' && (
+            <Link href="/challenges/create">
+              <Button variant="primary">Post New Problem Statement</Button>
+            </Link>
+          )}
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-6">
@@ -350,25 +354,29 @@ const MyChallengesPage: NextPageWithLayout = () => {
                     Status Monitor 📊
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleOpenEdit(ch)}
-                    className="bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-100"
-                  >
-                    <Edit3 className="w-4 h-4 mr-1.5" />
-                    Edit ✏️
-                  </Button>
+                  {user?.role !== 'ministry' && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleOpenEdit(ch)}
+                        className="bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-100"
+                      >
+                        <Edit3 className="w-4 h-4 mr-1.5" />
+                        Edit ✏️
+                      </Button>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleOpenDelete(ch)}
-                    className="bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border-red-300 dark:border-red-800 hover:bg-red-100"
-                  >
-                    <Trash2 className="w-4 h-4 mr-1.5" />
-                    Delete 🗑️
-                  </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleOpenDelete(ch)}
+                        className="bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border-red-300 dark:border-red-800 hover:bg-red-100"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1.5" />
+                        Delete 🗑️
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -632,22 +640,24 @@ const MyChallengesPage: NextPageWithLayout = () => {
                   </Badge>
                 </div>
 
-                <div className="flex items-center gap-2 pt-2">
-                  <span className="text-xs text-slate-500">Quick Change Status:</span>
-                  {['active', 'project', 'closed'].map((st) => (
-                    <button
-                      key={st}
-                      onClick={() => handleQuickStatusChange(st)}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold capitalize transition-all ${
-                        monitorChallenge.status === st
-                          ? 'bg-primary-600 text-white shadow'
-                          : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100'
-                      }`}
-                    >
-                      {st}
-                    </button>
-                  ))}
-                </div>
+                {user?.role !== 'ministry' && (
+                  <div className="flex items-center gap-2 pt-2">
+                    <span className="text-xs text-slate-500">Quick Change Status:</span>
+                    {['active', 'project', 'closed'].map((st) => (
+                      <button
+                        key={st}
+                        onClick={() => handleQuickStatusChange(st)}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold capitalize transition-all ${
+                          monitorChallenge.status === st
+                            ? 'bg-primary-600 text-white shadow'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Proposals Received Monitor */}

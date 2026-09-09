@@ -3,7 +3,7 @@ export interface User {
   email: string;
   username: string;
   full_name: string;
-  role: 'department' | 'startup' | 'evaluator' | 'admin';
+  role: 'department' | 'ministry' | 'startup' | 'evaluator' | 'admin';
   organization?: string;
   is_verified: boolean;
   created_at: string;

@@ -10,6 +10,7 @@ class UserRole(str, enum.Enum):
     EVALUATOR = "evaluator"
     ADMIN = "admin"
     MAINTENANCE = "maintenance"
+    MINISTRY = "ministry"
 
 class ChallengeStatus(str, enum.Enum):
     OPEN = "open"

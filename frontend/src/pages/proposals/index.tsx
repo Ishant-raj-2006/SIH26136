@@ -45,6 +45,7 @@ const stepIndex = (status: string) => {
 
 // ─── DEPARTMENT: Incoming proposals to review ─────────────────────────────────
 const DepartmentProposals: React.FC = () => {
+  const { user } = useAuthStore();
   const { challenges } = useAppStore();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -229,7 +230,7 @@ const DepartmentProposals: React.FC = () => {
                         <Eye className="w-3.5 h-3.5" /> View Challenge
                       </Button>
                     </Link>
-                    {proposal.status === 'submitted' || proposal.status === 'under_review' ? (
+                    {(proposal.status === 'submitted' || proposal.status === 'under_review') && user?.role !== 'ministry' ? (
                       <>
                         <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs text-green-600 border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20">
                           <Check className="w-3.5 h-3.5" /> Shortlist
@@ -424,7 +425,7 @@ const ProposalsPage: NextPageWithLayout = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (user?.role === 'department' || user?.role === 'admin') {
+  if (user?.role === 'department' || user?.role === 'ministry' || user?.role === 'admin') {
     return <DepartmentProposals />;
   }
   // startup (and evaluator redirect to evaluations)

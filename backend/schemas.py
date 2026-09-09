@@ -79,9 +79,26 @@ class CompanyRegistrationCreate(BaseModel):
     relevant_doc_url: Optional[str] = None
 
 class StartupUpdate(BaseModel):
+    name: Optional[str] = None
     description: Optional[str] = None
+    industry: Optional[str] = None
+    founded_year: Optional[int] = None
     team_size: Optional[int] = None
+    funding_stage: Optional[str] = None
     technologies: Optional[List[str]] = None
+    website: Optional[str] = None
+    logo_url: Optional[str] = None
+    company_type: Optional[str] = None
+    company_type_other: Optional[str] = None
+    headquarters_city: Optional[str] = None
+    state: Optional[str] = None
+    official_email: Optional[EmailStr] = None
+    contact_number: Optional[str] = None
+    founder_ceo_name: Optional[str] = None
+    auth_rep_name: Optional[str] = None
+    auth_rep_designation: Optional[str] = None
+    work_description: Optional[str] = None
+    linkedin_url: Optional[str] = None
     status: Optional[str] = None
 
 class StartupResponse(BaseModel):

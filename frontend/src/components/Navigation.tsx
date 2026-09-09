@@ -58,7 +58,8 @@ const adminNav: NavItem[] = [
 
 function getNavItems(role?: string): NavItem[] {
   switch (role) {
-    case 'department': return departmentNav;
+    case 'department': 
+    case 'ministry': return departmentNav;
     case 'startup':    return startupNav;
     case 'evaluator':  return evaluatorNav;
     case 'admin':      return adminNav;
@@ -121,7 +122,9 @@ export const Header: React.FC = () => {
       console.error('Error signing out from Clerk:', err);
     }
     logout();
-    router.push('/?auth=signin');
+    if (router.pathname !== '/' || router.query.auth !== 'signin') {
+      router.push('/?auth=signin');
+    }
   };
 
   const handleNotifClick = useCallback(

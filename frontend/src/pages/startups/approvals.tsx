@@ -273,31 +273,33 @@ export default function CompanyApprovalsPage() {
                       <span>Full Details</span>
                     </button>
 
-                    <div className="flex items-center gap-2">
-                      {currentStatus !== 'approved' && (
-                        <button
-                          type="button"
-                          disabled={updatingId === company.id}
-                          onClick={() => handleUpdateStatus(company.id, 'approved')}
-                          className="px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
-                        >
-                          <Check className="w-3.5 h-3.5 stroke-[3]" />
-                          <span>Approve ✅</span>
-                        </button>
-                      )}
+                    {user?.role !== 'ministry' && (
+                      <div className="flex items-center gap-2">
+                        {currentStatus !== 'approved' && (
+                          <button
+                            type="button"
+                            disabled={updatingId === company.id}
+                            onClick={() => handleUpdateStatus(company.id, 'approved')}
+                            className="px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+                          >
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            <span>Approve ✅</span>
+                          </button>
+                        )}
 
-                      {currentStatus !== 'rejected' && (
-                        <button
-                          type="button"
-                          disabled={updatingId === company.id}
-                          onClick={() => handleUpdateStatus(company.id, 'rejected')}
-                          className="px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-bold flex items-center gap-1 transition-all disabled:opacity-50"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                          <span>Reject ❌</span>
-                        </button>
-                      )}
-                    </div>
+                        {currentStatus !== 'rejected' && (
+                          <button
+                            type="button"
+                            disabled={updatingId === company.id}
+                            onClick={() => handleUpdateStatus(company.id, 'rejected')}
+                            className="px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-bold flex items-center gap-1 transition-all disabled:opacity-50"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            <span>Reject ❌</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               );
@@ -408,25 +410,27 @@ export default function CompanyApprovalsPage() {
                     Current Status: <span className="font-extrabold uppercase text-white">{selectedStartupModal.status || 'pending'}</span>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      disabled={updatingId === selectedStartupModal.id}
-                      onClick={() => handleUpdateStatus(selectedStartupModal.id, 'approved')}
-                      className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-1 transition-all"
-                    >
-                      <Check className="w-4 h-4 stroke-[3]" /> Approve Application ✅
-                    </button>
+                  {user?.role !== 'ministry' && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={updatingId === selectedStartupModal.id}
+                        onClick={() => handleUpdateStatus(selectedStartupModal.id, 'approved')}
+                        className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-1 transition-all"
+                      >
+                        <Check className="w-4 h-4 stroke-[3]" /> Approve Application ✅
+                      </button>
 
-                    <button
-                      type="button"
-                      disabled={updatingId === selectedStartupModal.id}
-                      onClick={() => handleUpdateStatus(selectedStartupModal.id, 'rejected')}
-                      className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 transition-all"
-                    >
-                      <X className="w-4 h-4" /> Reject ❌
-                    </button>
-                  </div>
+                      <button
+                        type="button"
+                        disabled={updatingId === selectedStartupModal.id}
+                        onClick={() => handleUpdateStatus(selectedStartupModal.id, 'rejected')}
+                        className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 transition-all"
+                      >
+                        <X className="w-4 h-4" /> Reject ❌
+                      </button>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </div>

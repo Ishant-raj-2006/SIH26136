@@ -56,6 +56,7 @@ export const SectionHeader: React.FC<{ activeTab?: string }> = ({ activeTab }) =
     { label: 'Participating Portals', href: '/portals', icon: Users, desc: 'Department, Startup & Evaluator Roles' },
     { label: 'GFR 194 Statutory', href: '/gfr194', icon: Scale, desc: 'Single-Source Procurement Exemption' },
     { label: 'FAQ & Helpdesk', href: '/faq', icon: HelpCircle, desc: 'Knowledge Base & Questions' },
+    { label: 'Edit your company details', href: '/settings/company', icon: Building2, desc: 'Update registered startup profile' },
   ];
 
   const isAboutActive = ['/problem', '/workflow', '/portals', '/gfr194', '/faq'].some((path) =>
@@ -119,7 +120,7 @@ export const SectionHeader: React.FC<{ activeTab?: string }> = ({ activeTab }) =
                     : 'text-slate-700 dark:text-slate-200 hover:text-blue-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-700/80'
                 }`}
               >
-                About Section
+                About
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${aboutDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
