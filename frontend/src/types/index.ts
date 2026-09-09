@@ -84,6 +84,14 @@ export interface Evaluation {
   created_at: string;
 }
 
+export interface Message {
+  id: number;
+  proposal_id: number;
+  sender_id: number;
+  content: string;
+  created_at: string;
+}
+
 export interface Pilot {
   id: number;
   challenge_id: number;

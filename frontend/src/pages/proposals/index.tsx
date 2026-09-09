@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   MessagesSquare, DollarSign, Calendar, ArrowRight, FileText,
-  Clock, Check, X, Eye, ChevronRight, Search, ShieldCheck,
+  Clock, Check, X, Eye, ChevronRight, Search, ShieldCheck, MessageSquare,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { useAuthStore } from '@/lib/stores/auth';
@@ -11,6 +11,7 @@ import { useAppStore } from '@/lib/stores/app';
 import { Layout } from '@/components/Layout';
 import { Card, Badge, Button, Input, Select } from '@/components/UI';
 import { SkeletonCard } from '@/components/Skeletons';
+import { ProposalChat } from '@/components/ProposalChat';
 import { formatDistanceToNow } from 'date-fns';
 import type { Proposal } from '@/types';
 import type { NextPageWithLayout } from '../_app';
@@ -57,6 +58,7 @@ const DepartmentProposals: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [challengeFilter, setChallengeFilter] = useState('');
   const [search, setSearch] = useState('');
+  const [activeChatId, setActiveChatId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -92,6 +94,7 @@ const DepartmentProposals: React.FC = () => {
 
   return (
     <motion.div initial="hidden" animate="visible" variants={fade} className="space-y-8">
+      {activeChatId && <ProposalChat proposalId={activeChatId} onClose={() => setActiveChatId(null)} />}
       <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-50 mb-1">Review Proposals</h1>
@@ -249,6 +252,14 @@ const DepartmentProposals: React.FC = () => {
                         <ChevronRight className="w-3.5 h-3.5" /> Details
                       </Button>
                     )}
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setActiveChatId(proposal.id)}
+                      className="flex items-center gap-1 text-xs text-blue-600 border-blue-200 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" /> Chat
+                    </Button>
                   </div>
                 </Card>
               </motion.div>
@@ -266,6 +277,7 @@ const StartupProposals: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
+  const [activeChatId, setActiveChatId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -287,6 +299,7 @@ const StartupProposals: React.FC = () => {
 
   return (
     <motion.div initial="hidden" animate="visible" variants={fade} className="space-y-8">
+      {activeChatId && <ProposalChat proposalId={activeChatId} onClose={() => setActiveChatId(null)} />}
       <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-50 mb-1">My Proposals</h1>
@@ -405,11 +418,20 @@ const StartupProposals: React.FC = () => {
                     </div>
                   )}
 
-                  <Link href={`/challenges/${proposal.challenge_id}`} className="mt-4">
-                    <Button variant="outline" className="w-full text-sm flex items-center gap-2">
-                      View Challenge <ArrowRight className="w-4 h-4" />
+                  <div className="flex gap-2 mt-4">
+                    <Link href={`/challenges/${proposal.challenge_id}`} className="flex-1">
+                      <Button variant="outline" className="w-full text-sm flex items-center justify-center gap-2">
+                        View Challenge <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                    <Button 
+                      variant="primary" 
+                      onClick={() => setActiveChatId(proposal.id)}
+                      className="text-sm flex items-center justify-center gap-2"
+                    >
+                      <MessageSquare className="w-4 h-4" /> Chat
                     </Button>
-                  </Link>
+                  </div>
                 </Card>
               </motion.div>
             );

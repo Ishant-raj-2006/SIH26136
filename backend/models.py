@@ -218,3 +218,15 @@ class OTPRecord(Base):
     expires_at = Column(DateTime)
     is_used = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class Message(Base):
+    __tablename__ = "messages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    proposal_id = Column(Integer, ForeignKey("proposals.id"), index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"))
+    content = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    proposal = relationship("Proposal", backref="messages")
+    sender = relationship("User", backref="sent_messages")

@@ -942,6 +942,64 @@ def get_challenge_proposals(challenge_id: int, skip: int = Query(0),
         "pages": math.ceil(total / limit) if limit > 0 else 1
     }
 
+@app.get("/api/proposals/{proposal_id}/messages", response_model=List[schemas.MessageResponse])
+def get_proposal_messages(proposal_id: int, email: str = Depends(auth.verify_token), db: Session = Depends(get_db)):
+    """Get all messages for a specific proposal"""
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+        
+    proposal = db.query(models.Proposal).filter(models.Proposal.id == proposal_id).first()
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+        
+    messages = db.query(models.Message).filter(models.Message.proposal_id == proposal_id).order_by(models.Message.created_at.asc()).all()
+    return messages
+
+@app.post("/api/proposals/{proposal_id}/messages", response_model=schemas.MessageResponse)
+def create_proposal_message(proposal_id: int, message_data: schemas.MessageCreate, email: str = Depends(auth.verify_token), db: Session = Depends(get_db)):
+    """Send a message for a specific proposal"""
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+        
+    proposal = db.query(models.Proposal).filter(models.Proposal.id == proposal_id).first()
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+        
+    message = models.Message(
+        proposal_id=proposal_id,
+        sender_id=user.id,
+        content=message_data.content
+    )
+    db.add(message)
+    db.commit()
+    db.refresh(message)
+    
+    # Notify the other party (if sender is startup, notify creator, else notify startup)
+    target_user_id = None
+    if user.role == "startup":
+        challenge = db.query(models.Challenge).filter(models.Challenge.id == proposal.challenge_id).first()
+        if challenge:
+            target_user_id = challenge.creator_id
+    else:
+        startup = db.query(models.Startup).filter(models.Startup.id == proposal.startup_id).first()
+        if startup:
+            target_user_id = startup.user_id
+            
+    if target_user_id and target_user_id != user.id:
+        notification = models.Notification(
+            user_id=target_user_id,
+            title="New Message",
+            message=f"New message received on proposal '{proposal.title}'",
+            type="message",
+            related_id=proposal.id
+        )
+        db.add(notification)
+        db.commit()
+        
+    return message
+
 # ==================== EVALUATION ROUTES ====================
 
 @app.post("/api/evaluations", response_model=schemas.EvaluationResponse)

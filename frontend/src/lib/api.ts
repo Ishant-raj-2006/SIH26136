@@ -606,6 +606,21 @@ class APIClient {
     return response.data;
   }
 
+  async getProposalMessages(proposalId: number) {
+    const response = await this.client.get(
+      `/api/proposals/${proposalId}/messages`
+    );
+    return response.data;
+  }
+
+  async sendProposalMessage(proposalId: number, content: string) {
+    const response = await this.client.post(
+      `/api/proposals/${proposalId}/messages`,
+      { content }
+    );
+    return response.data;
+  }
+
   // =========================
   // Evaluation endpoints
   // =========================
