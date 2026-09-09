@@ -73,16 +73,17 @@ const HomePage: NextPageWithLayout = () => {
     }
   }, [isAuthenticated, router]);
 
-  // Reliably determine the default role from the subdomain synchronously on the client
-  const [clientDefaultRole, setClientDefaultRole] = useState<string | undefined>(() => {
+  // Reliably determine the default role from the subdomain
+  const [clientDefaultRole, setClientDefaultRole] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const subdomain = window.location.hostname.split('.')[0];
       if (['startup', 'ministry', 'department', 'maintenance'].includes(subdomain)) {
-        return subdomain;
+        setClientDefaultRole(subdomain);
       }
     }
-    return undefined;
-  });
+  }, []);
 
   useEffect(() => {
     if (typeof router.query.role === 'string') {
