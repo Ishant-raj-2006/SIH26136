@@ -336,7 +336,8 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
   const canEdit = user && (user.id === challenge.creator_id || user.role === 'department' || user.role === 'admin');
 
   return (
-    <div className="space-y-8 pb-12">
+    <>
+      <div className="space-y-8 pb-12">
       {/* Top Breadcrumb & Action bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Link
@@ -1175,6 +1176,7 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
           </div>
         )}
       </AnimatePresence>
+    </div>
 
       {chatProposalId && (
         <ProposalChat 
