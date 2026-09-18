@@ -9,7 +9,7 @@ interface AuthStore {
   error: string | null;
   
   // Actions
-  login: (email: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
   register: (data: any) => Promise<void>;
   logout: () => void;
   getCurrentUser: () => Promise<void>;
@@ -22,10 +22,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
   isAuthenticated: false,
   error: null,
 
-  login: async (email: string, password: string) => {
+  login: async (username: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await apiClient.login(email, password);
+      const response = await apiClient.login(username, password);
       apiClient.setToken(response.access_token);
       
       const user = await apiClient.getCurrentUser();

@@ -374,13 +374,13 @@ class APIClient {
   }
 
   async login(
-    email: string,
+    username: string,
     password: string
   ): Promise<AuthResponse> {
     const response = await this.client.post(
       '/api/auth/login',
       {
-        email,
+        username,
         password,
       }
     );

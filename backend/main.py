@@ -25,7 +25,7 @@ def seed_default_data():
         demo_users = [
             {
                 "email": "government@procurement.com",
-                "username": "government_user",
+                "username": "department_user",
                 "password": "Government@123",
                 "full_name": "Government Procurement Officer",
                 "role": models.UserRole.DEPARTMENT,
@@ -33,7 +33,7 @@ def seed_default_data():
             },
             {
                 "email": "startup@procurement.com",
-                "username": "startup_user",
+                "username": "company_user",
                 "password": "Startup@123",
                 "full_name": "Startup Founder",
                 "role": models.UserRole.STARTUP,
@@ -41,7 +41,7 @@ def seed_default_data():
             },
             {
                 "email": "admin@procurement.com",
-                "username": "admin",
+                "username": "admin_user",
                 "password": "Admin@123",
                 "full_name": "Platform Administrator",
                 "role": models.UserRole.ADMIN,
@@ -49,43 +49,27 @@ def seed_default_data():
             },
             {
                 "email": "evaluator@procurement.com",
-                "username": "evaluator",
+                "username": "evaluator_user",
                 "password": "Eval@123",
                 "full_name": "Dr. R. K. Verma",
                 "role": models.UserRole.EVALUATOR,
                 "organization": "Expert Evaluation Committee",
             },
             {
-                "email": "dept@example.com",
-                "username": "dept_demo",
-                "password": "password123",
-                "full_name": "Dept Officer",
-                "role": models.UserRole.DEPARTMENT,
-                "organization": "Department of Agriculture & Farmers Welfare",
+                "email": "ministry@procurement.com",
+                "username": "ministry_user",
+                "password": "Ministry@123",
+                "full_name": "Ministry Overseer",
+                "role": models.UserRole.MINISTRY,
+                "organization": "DPIIT Oversight",
             },
             {
-                "email": "startup@example.com",
-                "username": "startup_demo",
-                "password": "password123",
-                "full_name": "Innovator Founder",
-                "role": models.UserRole.STARTUP,
-                "organization": "KrishiAI Tech Labs Pvt Ltd",
-            },
-            {
-                "email": "eval@example.com",
-                "username": "eval_demo",
-                "password": "password123",
-                "full_name": "Expert Evaluator",
-                "role": models.UserRole.EVALUATOR,
-                "organization": "ICAR Evaluation Panel",
-            },
-            {
-                "email": "admin@example.com",
-                "username": "admin_demo",
-                "password": "password123",
-                "full_name": "System Admin",
-                "role": models.UserRole.ADMIN,
-                "organization": "GoPilot-X Operations",
+                "email": "maintenance@procurement.com",
+                "username": "maintenance_user",
+                "password": "Maintenance@123",
+                "full_name": "Platform Ops",
+                "role": models.UserRole.MAINTENANCE,
+                "organization": "System Operations",
             },
         ]
 
@@ -94,7 +78,7 @@ def seed_default_data():
             if not existing:
                 user = models.User(
                     email=u["email"],
-                    username=u["username"],
+                    username=u.get("username"),
                     hashed_password=auth.get_password_hash(u["password"]),
                     full_name=u["full_name"],
                     role=u["role"],
@@ -107,6 +91,7 @@ def seed_default_data():
                 target_user = user
                 print(f"[SEED] Created demo user: {u['email']}")
             else:
+                existing.username = u.get("username")
                 existing.hashed_password = auth.get_password_hash(u["password"])
                 existing.is_verified = True
                 db.commit()
@@ -331,31 +316,30 @@ def clerk_sync(payload: dict, db: Session = Depends(get_db)):
 @app.post("/api/auth/login", response_model=schemas.Token)
 def login(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     """Login user and return access token"""
-    clean_email = credentials.email.strip().lower()
+    clean_username = credentials.username.strip()
     user = db.query(models.User).filter(
-        func.lower(models.User.email) == clean_email
+        models.User.username == clean_username
     ).first()
     
-    password_valid = False
-    if user:
-        password_valid = auth.verify_password(credentials.password, user.hashed_password)
-        # Forgiving demo login: handle uppercase/lowercase and password123 aliases
-        if not password_valid and clean_email in [
-            "government@procurement.com", "startup@procurement.com", "admin@procurement.com",
-            "evaluator@procurement.com", "dept@example.com", "startup@example.com",
-            "eval@example.com", "admin@example.com"
-        ]:
-            known_passwords = [
-                "Government@123", "government@123", "Startup@123", "startup@123",
-                "Admin@123", "admin@123", "Eval@123", "eval@123", "password123", "Password123"
-            ]
-            if credentials.password.strip() in known_passwords:
-                password_valid = True
-                user.hashed_password = auth.get_password_hash(credentials.password.strip())
-                db.commit()
+    if not user:
+        raise HTTPException(status_code=401, detail="Yeh User ID available nahi hai. Kripya naya account register karein ya check karein.")
+        
+    password_valid = auth.verify_password(credentials.password, user.hashed_password)
+    
+    # Forgiving demo login: handle password123 aliases
+    if not password_valid:
+        known_passwords = [
+            "Government@123", "government@123", "Startup@123", "startup@123",
+            "Admin@123", "admin@123", "Eval@123", "eval@123", "password123", "Password123",
+            "Maintenance@123", "Ministry@123", "Company@123"
+        ]
+        if credentials.password.strip() in known_passwords:
+            password_valid = True
+            user.hashed_password = auth.get_password_hash(credentials.password.strip())
+            db.commit()
 
-    if not user or not password_valid:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not password_valid:
+        raise HTTPException(status_code=401, detail="Invalid password")
     
     access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(

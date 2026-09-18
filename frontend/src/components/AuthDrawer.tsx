@@ -36,11 +36,11 @@ interface AuthDrawerProps {
 }
 
 const entityCategories = [
-  { id: 'startup', label: '🚀 Startup', email: 'startup@procurement.com', pass: 'Startup@123', desc: 'DPIIT Exempt' },
-  { id: 'company', label: '🏢 Company', email: 'company@procurement.com', pass: 'Company@123', desc: 'Enterprise' },
-  { id: 'department', label: '🏛️ Department', email: 'government@procurement.com', pass: 'Government@123', desc: 'Public Buyer' },
-  { id: 'ministry', label: '👁️ Ministry', email: 'ministry@procurement.com', pass: 'Ministry@123', desc: 'Read-Only Overseer' },
-  { id: 'maintenance', label: '🔧 Maintenance', email: 'maintenance@procurement.com', pass: 'Maintenance@123', desc: 'Platform Ops' },
+  { id: 'startup', label: '🚀 Startup', username: 'company_user', pass: 'Startup@123', desc: 'DPIIT Exempt' },
+  { id: 'company', label: '🏢 Company', username: 'company_user', pass: 'Startup@123', desc: 'Enterprise' },
+  { id: 'department', label: '🏛️ Department', username: 'department_user', pass: 'Government@123', desc: 'Public Buyer' },
+  { id: 'ministry', label: '👁️ Ministry', username: 'ministry_user', pass: 'Ministry@123', desc: 'Read-Only Overseer' },
+  { id: 'maintenance', label: '🔧 Maintenance', username: 'maintenance_user', pass: 'Maintenance@123', desc: 'Platform Ops' },
 ];
 
 export const departmentOptions = [
@@ -73,7 +73,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
   const [localError, setLocalError] = useState<string | null>(null);
 
   // Sign In Form State
-  const [signInEmail, setSignInEmail] = useState('startup@procurement.com');
+  const [signInUsername, setSignInUsername] = useState('company_user');
   const [signInPassword, setSignInPassword] = useState('Startup@123');
 
   // Register Form State
@@ -151,7 +151,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
     if (defaultRole && isOpen) {
       const cat = entityCategories.find(c => c.id === defaultRole) || entityCategories[0];
       setSelectedEntity(cat.id);
-      setSignInEmail(cat.email);
+      setSignInUsername(cat.username);
       setSignInPassword(cat.pass);
       setRegData(prev => ({ ...prev, role: cat.id }));
     }
@@ -182,7 +182,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
 
   const handleSelectRole = (cat: typeof entityCategories[0]) => {
     setSelectedEntity(cat.id);
-    setSignInEmail(cat.email);
+    setSignInUsername(cat.username);
     setSignInPassword(cat.pass);
     setLocalError(null);
   };
@@ -193,7 +193,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
     setIsLoading(true);
 
     try {
-      await login(signInEmail.trim(), signInPassword.trim());
+      await login(signInUsername.trim(), signInPassword.trim());
 
       const loggedUser = useAuthStore.getState().user;
       const userRole = loggedUser?.role?.toLowerCase() || '';
@@ -294,7 +294,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
 
       toast.success('Email verified & Registration successful! You may now sign in.');
       setMode('signin');
-      setSignInEmail(regData.email);
+      setSignInUsername(regData.username || regData.email.split('@')[0]);
       setSignInPassword(regData.password);
       setRegOtpStep(false);
       setRegOtpCode('');
@@ -361,8 +361,8 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
       });
 
       toast.success('Password updated in database! You can now sign in.');
-      setSignInEmail(forgotEmail.trim());
-      setSignInPassword(forgotNewPassword.trim());
+      // Keep existing username if populated, or we could leave it blank if they forgot their username
+      // For now we will just switch mode
       setMode('signin');
 
       // Reset state
@@ -532,21 +532,21 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
                     </div>
                   )}
 
-                  {/* Email Input */}
+                  {/* Username Input */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                      Work / Entity Email
+                      User ID
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <Mail className="w-3.5 h-3.5" />
+                        <User className="w-3.5 h-3.5" />
                       </div>
                       <input
-                        type="email"
+                        type="text"
                         required
-                        value={signInEmail}
-                        onChange={(e) => setSignInEmail(e.target.value)}
-                        placeholder="official.officer@gov.in or founder@startup.in"
+                        value={signInUsername}
+                        onChange={(e) => setSignInUsername(e.target.value)}
+                        placeholder="e.g. company_user"
                         className="w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 transition-all"
                       />
                     </div>
@@ -561,7 +561,6 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
                       <button
                         type="button"
                         onClick={() => {
-                          setForgotEmail(signInEmail);
                           setMode('forgot_password');
                         }}
                         className="text-xs text-blue-700 hover:text-blue-900 font-bold transition-colors"
@@ -755,22 +754,43 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
                       </div>
 
                       {/* Official Email */}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                          Official Work / Gmail Email
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                            <Mail className="w-3.5 h-3.5" />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Desired User ID
+                          </label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                              <User className="w-3.5 h-3.5" />
+                            </div>
+                            <input
+                              type="text"
+                              required
+                              value={regData.username}
+                              onChange={(e) => setRegData({ ...regData, username: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
+                              placeholder="e.g. acme_admin"
+                              className="w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 transition-all"
+                            />
                           </div>
-                          <input
-                            type="email"
-                            required
-                            value={regData.email}
-                            onChange={(e) => setRegData({ ...regData, email: e.target.value })}
-                            placeholder="contact@innovations.in or user@gmail.com"
-                            className="w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 transition-all"
-                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Official Email
+                          </label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                              <Mail className="w-3.5 h-3.5" />
+                            </div>
+                            <input
+                              type="email"
+                              required
+                              value={regData.email}
+                              onChange={(e) => setRegData({ ...regData, email: e.target.value })}
+                              placeholder="contact@innovations.in"
+                              className="w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 transition-all"
+                            />
+                          </div>
                         </div>
                       </div>
 

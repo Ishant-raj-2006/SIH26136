@@ -146,3 +146,12 @@ export interface DashboardStats {
   is_verified?: boolean;
   total_budget?: number;
 }
+
+export interface ProgressUpdate {
+  id: number;
+  pilot_id: number;
+  percentage: number;
+  description: string;
+  photo_url?: string;
+  created_at: string;
+}
