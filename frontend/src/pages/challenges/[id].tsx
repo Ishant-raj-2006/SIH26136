@@ -333,7 +333,7 @@ const ChallengeDetailPage: NextPageWithLayout = () => {
     );
   }
 
-  const canEdit = user && (user.id === challenge.creator_id || user.role === 'department' || user.role === 'admin');
+  const canEdit = user && (user.id === challenge.creator_id || user.role === 'department' || user.role === 'ministry' || user.role === 'admin');
 
   return (
     <>

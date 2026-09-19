@@ -848,9 +848,10 @@ def update_challenge(challenge_id: int, challenge_data: schemas.ChallengeUpdate,
         
     is_admin = user and (user.role == models.UserRole.ADMIN or user.role == "admin")
     is_dept = user and (user.role == models.UserRole.DEPARTMENT or user.role == "department")
+    is_ministry = user and (user.role == models.UserRole.MINISTRY or user.role == "ministry")
     is_creator = user and challenge.creator_id == user.id
 
-    if not (is_creator or is_dept or is_admin):
+    if not (is_creator or is_dept or is_ministry or is_admin):
         raise HTTPException(status_code=403, detail="Not authorized to edit this challenge")
     
     update_data = challenge_data.model_dump(exclude_unset=True)
@@ -873,9 +874,11 @@ def delete_challenge(challenge_id: int,
         raise HTTPException(status_code=404, detail="Challenge not found")
         
     is_admin = user and (user.role == models.UserRole.ADMIN or user.role == "admin")
+    is_dept = user and (user.role == models.UserRole.DEPARTMENT or user.role == "department")
+    is_ministry = user and (user.role == models.UserRole.MINISTRY or user.role == "ministry")
     is_creator = user and challenge.creator_id == user.id
 
-    if not (is_creator or is_admin):
+    if not (is_creator or is_dept or is_ministry or is_admin):
         raise HTTPException(status_code=403, detail="Not authorized to delete this challenge")
         
     db.delete(challenge)
