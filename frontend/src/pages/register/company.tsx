@@ -27,7 +27,7 @@ import {
   FileCheck
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
-import { apiClient } from '@/lib/api';
+import { apiClient, getFileUrl } from '@/lib/api';
 import { useAuthStore } from '@/lib/stores/auth';
 import toast from 'react-hot-toast';
 
@@ -562,7 +562,7 @@ export default function CompanyRegistrationPage() {
                     </label>
                     {logoUrl && (
                       <div className="w-10 h-10 rounded-lg overflow-hidden border border-emerald-500/50 bg-slate-950 shrink-0 flex items-center justify-center">
-                        <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                        <img src={getFileUrl(logoUrl)} alt="Logo" className="w-full h-full object-cover" />
                       </div>
                     )}
                   </div>

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Search, Globe, Users, Target, Star, Zap } from 'lucide-react';
 import { useAppStore } from '@/lib/stores/app';
 import { useAuthStore } from '@/lib/stores/auth';
+import { getFileUrl } from '@/lib/api';
 import { Layout } from '@/components/Layout';
 import { Card, Button, Input, Badge } from '@/components/UI';
 import { SkeletonCard } from '@/components/Skeletons';
@@ -92,7 +93,7 @@ const StartupsPage: NextPageWithLayout = () => {
                       <div className="flex-1">
                         {startup.logo_url && (
                           <img
-                            src={startup.logo_url}
+                            src={getFileUrl(startup.logo_url)}
                             alt={startup.name}
                             className="w-12 h-12 rounded-lg mb-2 object-cover"
                           />

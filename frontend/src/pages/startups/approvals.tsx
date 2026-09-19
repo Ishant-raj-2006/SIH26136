@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  ArrowLeft,
   Building2,
   CheckCircle2,
   XCircle,
@@ -26,11 +28,12 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
-import { apiClient } from '@/lib/api';
+import { apiClient, getFileUrl } from '@/lib/api';
 import { useAuthStore } from '@/lib/stores/auth';
 import toast from 'react-hot-toast';
 
 export default function CompanyApprovalsPage() {
+  const router = useRouter();
   const { user } = useAuthStore();
   const [startups, setStartups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,9 +99,18 @@ export default function CompanyApprovalsPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold uppercase tracking-wider mb-2">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Ministry & Department Governance Portal
+            <div className="flex items-center gap-3 mb-2">
+              <button
+                onClick={() => router.back()}
+                className="p-1.5 rounded-lg bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors border border-slate-700 shadow-sm"
+                title="Go Back"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold uppercase tracking-wider">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Ministry & Department Governance Portal
+              </div>
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
               New Company Registration Approvals
@@ -195,7 +207,7 @@ export default function CompanyApprovalsPage() {
                       <div className="flex items-center gap-3">
                         {company.logo_url ? (
                           <img
-                            src={company.logo_url}
+                            src={getFileUrl(company.logo_url)}
                             alt={company.name}
                             className="w-12 h-12 rounded-xl object-cover border border-slate-700 bg-slate-950 shrink-0"
                           />
@@ -250,7 +262,7 @@ export default function CompanyApprovalsPage() {
                     {/* Incorporation Certificate Link */}
                     {company.incorporation_cert_url && (
                       <a
-                        href={company.incorporation_cert_url}
+                        href={getFileUrl(company.incorporation_cert_url)}
                         target="_blank"
                         rel="noreferrer"
                         className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500 text-xs text-emerald-400 transition-colors"
@@ -321,7 +333,7 @@ export default function CompanyApprovalsPage() {
                   <div className="flex items-center gap-3">
                     {selectedStartupModal.logo_url && (
                       <img
-                        src={selectedStartupModal.logo_url}
+                        src={getFileUrl(selectedStartupModal.logo_url)}
                         alt="Logo"
                         className="w-12 h-12 rounded-xl object-cover border border-slate-700 bg-slate-950"
                       />
@@ -381,7 +393,7 @@ export default function CompanyApprovalsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {selectedStartupModal.incorporation_cert_url && (
                     <a
-                      href={selectedStartupModal.incorporation_cert_url}
+                      href={getFileUrl(selectedStartupModal.incorporation_cert_url)}
                       target="_blank"
                       rel="noreferrer"
                       className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center justify-between hover:bg-emerald-500/20 transition-all"
@@ -393,7 +405,7 @@ export default function CompanyApprovalsPage() {
 
                   {selectedStartupModal.relevant_doc_url && (
                     <a
-                      href={selectedStartupModal.relevant_doc_url}
+                      href={getFileUrl(selectedStartupModal.relevant_doc_url)}
                       target="_blank"
                       rel="noreferrer"
                       className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-bold flex items-center justify-between hover:bg-cyan-500/20 transition-all"

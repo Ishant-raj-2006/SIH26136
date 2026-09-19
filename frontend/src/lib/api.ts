@@ -263,6 +263,13 @@ function getBaseApiUrl(): string {
 
 const API_URL = getBaseApiUrl();
 
+export function getFileUrl(path: string | null | undefined): string {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  if (path.startsWith('data:')) return path;
+  return `${API_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+}
+
 class APIClient {
   private client: AxiosInstance;
   private token: string | null = null;
