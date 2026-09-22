@@ -35,10 +35,17 @@ interface AuthDrawerProps {
   defaultRole?: string;
 }
 
-const entityCategories = [
+const allEntityCategories = [
   { id: 'company', label: '🏢 Company', username: 'company_user', pass: 'Startup@123', desc: 'Enterprise' },
   { id: 'department', label: '🏛️ Department', username: 'department_user', pass: 'Government@123', desc: 'Public Buyer' },
 ];
+
+const entityCategories = allEntityCategories.filter(cat => {
+  if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_PORTAL_TYPE) {
+    return cat.id === process.env.NEXT_PUBLIC_PORTAL_TYPE;
+  }
+  return true;
+});
 
 export const departmentOptions = [
   'Ministry of Electronics & Information Technology (MeitY)',
@@ -64,14 +71,14 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
   const { user: clerkUser, isSignedIn: isClerkSignedIn } = useUser();
 
   const [mode, setMode] = useState<'signin' | 'register' | 'clerk' | 'forgot_password'>(initialMode);
-  const [selectedEntity, setSelectedEntity] = useState<string>('company');
+  const [selectedEntity, setSelectedEntity] = useState<string>(entityCategories[0]?.id || 'company');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   // Sign In Form State
-  const [signInUsername, setSignInUsername] = useState('company_user');
-  const [signInPassword, setSignInPassword] = useState('Startup@123');
+  const [signInUsername, setSignInUsername] = useState(entityCategories[0]?.username || 'company_user');
+  const [signInPassword, setSignInPassword] = useState(entityCategories[0]?.pass || 'Startup@123');
 
   // Register Form State
   const [regData, setRegData] = useState({
@@ -80,7 +87,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
     password: '',
     confirmPassword: '',
     full_name: '',
-    role: defaultRole || 'company',
+    role: defaultRole || entityCategories[0]?.id || 'company',
     organization: '',
     department: 'Ministry of Electronics & Information Technology (MeitY)',
     agreeTerms: true
@@ -147,6 +154,14 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
   useEffect(() => {
     if (defaultRole && isOpen) {
       const cat = entityCategories.find(c => c.id === defaultRole) || entityCategories[0];
+      if (cat) {
+        setSelectedEntity(cat.id);
+        setSignInUsername(cat.username);
+        setSignInPassword(cat.pass);
+        setRegData(prev => ({ ...prev, role: cat.id }));
+      }
+    } else if (isOpen && entityCategories.length > 0) {
+      const cat = entityCategories[0];
       setSelectedEntity(cat.id);
       setSignInUsername(cat.username);
       setSignInPassword(cat.pass);
@@ -501,7 +516,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
 
 
                   {/* Entity Category Selector (Hidden if accessed via subdomain direct link) */}
-                  {!defaultRole && (
+                  {!defaultRole && entityCategories.length > 1 && (
                     <div>
                       <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                         Select Account Type / Category:
