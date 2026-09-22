@@ -149,9 +149,11 @@ export const Header: React.FC = () => {
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </Button>
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-900 rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-xs tracking-wider">GX</span>
-            </div>
+            <img 
+              src="/emblem.svg" 
+              alt="Government of India" 
+              className="h-10 w-auto object-contain drop-shadow-sm dark:invert opacity-90"
+            />
             <span className="hidden sm:inline font-bold text-lg text-slate-900 dark:text-slate-50 tracking-tight">
               GoPilot-X
             </span>

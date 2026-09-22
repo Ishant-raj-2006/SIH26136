@@ -197,9 +197,9 @@ const HomePage: NextPageWithLayout = () => {
           {/* HERO SECTION WITH VISIBLE VIDEO ANIMATION BACKGROUND */}
           <section className="relative z-10 pt-8 pb-12 lg:pt-12 lg:pb-16 border-b border-slate-800/80">
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-                {/* Left Column: Mission, Headlines, CTAs */}
-                <div className="lg:col-span-7 text-center lg:text-left">
+              <div className="grid grid-cols-1 gap-10 items-center">
+                {/* Center Column: Mission, Headlines, CTAs */}
+                <div className="text-center max-w-4xl mx-auto flex flex-col items-center">
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -231,7 +231,7 @@ const HomePage: NextPageWithLayout = () => {
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="mt-6 text-lg text-slate-200 leading-relaxed max-w-2xl font-normal drop-shadow-sm"
+                    className="mt-6 text-lg text-slate-200 leading-relaxed max-w-2xl text-center font-normal drop-shadow-sm"
                   >
                     Replace rigid legacy tender specs with agile, outcome-based problem statements. Test breakthrough deep-tech innovations in risk-contained departmental sandboxes with milestone-based escrow payments and compliant GFR 194 scale-up contracts.
                   </motion.p>
@@ -241,7 +241,7 @@ const HomePage: NextPageWithLayout = () => {
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
+                    className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 w-full"
                   >
                     <button
                       type="button"
@@ -269,98 +269,7 @@ const HomePage: NextPageWithLayout = () => {
                   </motion.div>
                 </div>
 
-                {/* Right Column: Sandbox Telemetry Card */}
-                <div className="lg:col-span-5">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                    animate={{ opacity: 1, scale: 1, y: [0, -20, 0, 12, 0], x: [0, 8, 0, -8, 0], rotate: [0, 1.4, 0, -1.4, 0] }}
-                    transition={{
-                      opacity: { duration: 0.5, delay: 0.2 },
-                      scale: { duration: 0.5, delay: 0.2 },
-                      y: { duration: 5, repeat: Infinity, ease: 'easeInOut' },
-                      x: { duration: 6.5, repeat: Infinity, ease: 'easeInOut' },
-                      rotate: { duration: 7, repeat: Infinity, ease: 'easeInOut' }
-                    }}
-                    className="relative rounded-3xl bg-slate-900/20 border border-slate-400/30 p-6 shadow-2xl overflow-hidden backdrop-blur-md transition-all hover:bg-slate-900/30 hover:border-blue-400/50"
-                  >
-                    <div className="flex items-center justify-between pb-4 border-b border-slate-700/40 mb-5">
-                      <div className="flex items-center gap-2.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                        <span className="text-xs font-bold uppercase tracking-wider text-white">
-                          Live Sandbox Telemetry
-                        </span>
-                      </div>
-                      <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-400/40">
-                        GFR RULE 194 ACTIVE
-                      </span>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="p-4 rounded-2xl bg-slate-950/25 backdrop-blur-md border border-slate-800/40">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">Pilot Sandbox #SB-804</span>
-                            <h4 className="text-sm font-bold text-white">AI Wildfire Perimeter Aerial Telemetry</h4>
-                          </div>
-                          <span className="text-xs font-bold text-emerald-400">₹35,00,000</span>
-                        </div>
-
-                        <div className="mt-3">
-                          <div className="flex justify-between text-xs text-slate-200 mb-1.5 font-medium">
-                            <span>Milestone 2: Field Sensor Integration</span>
-                            <span className="text-blue-400 font-bold">68% Completed</span>
-                          </div>
-                          <div className="w-full h-2 rounded-full bg-slate-800/80 overflow-hidden">
-                            <motion.div
-                              className="h-full bg-blue-500 rounded-full"
-                              initial={{ width: '0%' }}
-                              animate={{ width: '68%' }}
-                              transition={{ duration: 1.5, ease: 'easeOut' }}
-                            />
-                          </div>
-                          <div className="flex justify-between text-[11px] text-slate-300 mt-1.5 font-medium">
-                            <span>Tranche ₹14.0L Escrowed</span>
-                            <span className="text-emerald-400 font-semibold">Auto-Disburses on Sign-off</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-2.5 text-center">
-                        <div className="p-3 rounded-xl bg-slate-950/25 backdrop-blur-md border border-slate-800/40">
-                          <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Evaluation</div>
-                          <div className="text-base font-bold text-emerald-400 mt-0.5">92 / 100</div>
-                          <div className="text-[10px] text-slate-400">Blind Matrix</div>
-                        </div>
-                        <div className="p-3 rounded-xl bg-slate-950/25 backdrop-blur-md border border-slate-800/40">
-                          <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">IP Escrow</div>
-                          <div className="text-base font-bold text-blue-400 mt-0.5">100%</div>
-                          <div className="text-[10px] text-slate-400">Protected</div>
-                        </div>
-                        <div className="p-3 rounded-xl bg-slate-950/25 backdrop-blur-md border border-slate-800/40">
-                          <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">TRL Score</div>
-                          <div className="text-base font-bold text-amber-400 mt-0.5">TRL 7</div>
-                          <div className="text-[10px] text-slate-400">Field Ready</div>
-                        </div>
-                      </div>
-
-                      <div className="p-3 rounded-xl bg-emerald-500/15 backdrop-blur-md border border-emerald-500/40 flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                            <ShieldCheck className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-bold text-white">DPIIT Exemption Verified</div>
-                            <div className="text-[11px] text-slate-200">Cert #DIPP102948 • Prior turnover waived</div>
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40">
-                          ELIGIBLE
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
                 </div>
-              </div>
 
               {/* Key Pillars Grid */}
               <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -447,29 +356,64 @@ const HomePage: NextPageWithLayout = () => {
             </div>
           </section>
 
-          {/* COMPACT PROFESSIONAL FOOTER */}
-          <footer className="relative z-10 border-t border-slate-800 bg-slate-950 py-6 text-slate-300 text-xs">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
-                  GX
+          {/* OFFICIAL GOVERNMENT FOOTER */}
+          <footer className="relative z-10 border-t border-slate-800 bg-slate-950 pt-12 pb-8 text-slate-400 text-xs">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 pb-8 border-b border-slate-800/80">
+                <div className="col-span-1 md:col-span-1 flex flex-col gap-4">
+                  <div className="flex items-center gap-3">
+                    <img src="/emblem.svg" alt="Emblem of India" className="h-10 w-auto object-contain dark:invert opacity-90" />
+                    <div>
+                      <div className="text-white font-bold tracking-tight text-sm">GoPilot-X BHARAT</div>
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Government of India</div>
+                    </div>
+                  </div>
+                  <p className="text-[11px] leading-relaxed">
+                    National Startup Public Procurement Portal.<br/>
+                    A Sandbox Framework for fast-tracking Deep-Tech Innovations in Government Departments under GFR Rule 194.
+                  </p>
                 </div>
+                
                 <div>
-                  <div className="text-white font-bold tracking-tight text-sm">GoPilot-X BHARAT</div>
-                  <div className="text-[11px] text-slate-400">Government of India • Smart India Hackathon PS SIH26136</div>
+                  <h4 className="text-white font-bold mb-4 uppercase text-[11px] tracking-wider">Important Links</h4>
+                  <ul className="space-y-2 flex flex-col">
+                    <li><a href="https://www.india.gov.in/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">National Portal of India</a></li>
+                    <li><a href="https://digitalindia.gov.in/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">Digital India</a></li>
+                    <li><a href="https://www.meity.gov.in/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">Ministry of Electronics & IT</a></li>
+                    <li><a href="https://www.startupindia.gov.in/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">Startup India Sandbox</a></li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="text-white font-bold mb-4 uppercase text-[11px] tracking-wider">Policies & Help</h4>
+                  <ul className="space-y-2 flex flex-col">
+                    <li><Link href="/gfr194" className="hover:text-blue-400 transition-colors">GFR 194 Guidelines</Link></li>
+                    <li><Link href="/workflow" className="hover:text-blue-400 transition-colors">4-Stage Pipeline</Link></li>
+                    <li><Link href="#" className="hover:text-blue-400 transition-colors">Privacy Policy</Link></li>
+                    <li><Link href="/faq" className="hover:text-blue-400 transition-colors">FAQ & Helpdesk</Link></li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="text-white font-bold mb-4 uppercase text-[11px] tracking-wider">Contact Us</h4>
+                  <ul className="space-y-2 flex flex-col">
+                    <li>Smart India Hackathon 2026</li>
+                    <li>Problem Statement: SIH26136</li>
+                    <li>Email: ishant786raj@gmail.com</li>
+                    <li>Ph: +91-8317735828</li>
+                  </ul>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-300 font-semibold">
-                <Link href="/problem" className="hover:text-blue-400 transition-colors">Problem & Vision</Link>
-                <Link href="/workflow" className="hover:text-blue-400 transition-colors">4-Stage Pipeline</Link>
-                <Link href="/portals" className="hover:text-blue-400 transition-colors">Portals</Link>
-                <Link href="/gfr194" className="hover:text-blue-400 transition-colors">GFR 194 Guidelines</Link>
-                <Link href="/faq" className="hover:text-blue-400 transition-colors">FAQ</Link>
-              </div>
-
-              <div className="text-xs text-slate-400 text-center md:text-right font-medium">
-                Official Startup Procurement Sandbox Framework
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left text-[10px]">
+                <div>
+                  © 2026 Government of India. All rights reserved.<br/>
+                  Designed, Developed and Hosted by <strong className="text-white">National Informatics Centre (NIC)</strong>, Ministry of Electronics & IT (MeitY).
+                </div>
+                <div className="flex gap-2 items-center text-slate-500">
+                  <span className="px-2 py-1 bg-slate-900 border border-slate-800 rounded">W3C HTML5</span>
+                  <span className="px-2 py-1 bg-slate-900 border border-slate-800 rounded">WCAG 2.0 (AA)</span>
+                </div>
               </div>
             </div>
           </footer>

@@ -36,11 +36,8 @@ interface AuthDrawerProps {
 }
 
 const entityCategories = [
-  { id: 'startup', label: '🚀 Startup', username: 'company_user', pass: 'Startup@123', desc: 'DPIIT Exempt' },
   { id: 'company', label: '🏢 Company', username: 'company_user', pass: 'Startup@123', desc: 'Enterprise' },
   { id: 'department', label: '🏛️ Department', username: 'department_user', pass: 'Government@123', desc: 'Public Buyer' },
-  { id: 'ministry', label: '👁️ Ministry', username: 'ministry_user', pass: 'Ministry@123', desc: 'Read-Only Overseer' },
-  { id: 'maintenance', label: '🔧 Maintenance', username: 'maintenance_user', pass: 'Maintenance@123', desc: 'Platform Ops' },
 ];
 
 export const departmentOptions = [
@@ -67,7 +64,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
   const { user: clerkUser, isSignedIn: isClerkSignedIn } = useUser();
 
   const [mode, setMode] = useState<'signin' | 'register' | 'clerk' | 'forgot_password'>(initialMode);
-  const [selectedEntity, setSelectedEntity] = useState<string>('startup');
+  const [selectedEntity, setSelectedEntity] = useState<string>('company');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -83,7 +80,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
     password: '',
     confirmPassword: '',
     full_name: '',
-    role: defaultRole || 'startup',
+    role: defaultRole || 'company',
     organization: '',
     department: 'Ministry of Electronics & Information Technology (MeitY)',
     agreeTerms: true
@@ -185,6 +182,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
     setSignInUsername(cat.username);
     setSignInPassword(cat.pass);
     setLocalError(null);
+    setRegData(prev => ({ ...prev, role: cat.id }));
   };
 
   const handleSignInSubmit = async (e: React.FormEvent) => {
@@ -210,7 +208,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
 
       if (userRole === 'department') {
         router.push('/dashboard');
-      } else if (userRole === 'startup') {
+      } else if (userRole === 'company') {
         router.push('/dashboard');
       } else if (userRole === 'maintenance') {
         router.push('/dashboard');
@@ -460,7 +458,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
                   {mode === 'forgot_password' ? '← Back to Sign In' : 'Sign In'}
                 </button>
                 
-                {(!defaultRole || defaultRole === 'startup') && (
+                {(!defaultRole || defaultRole === 'company') && (
                   <>
                     <button
                       type="button"
@@ -615,7 +613,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
                   {!defaultRole && (
                     <div className="text-center pt-1 space-y-1">
                       <div>
-                        <span className="text-xs text-slate-500 font-medium">New Company or Startup? </span>
+                        <span className="text-xs text-slate-500 font-medium">New Company? </span>
                         <button
                           type="button"
                           onClick={() => {
@@ -650,42 +648,7 @@ export const AuthDrawer: React.FC<AuthDrawerProps> = ({
 
 
                       {/* Account Type / Role (Hidden if accessed via subdomain direct link) */}
-                      {!defaultRole && (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                            Participating Entity Category
-                          </label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setRegData({ ...regData, role: 'startup' })}
-                              className={`p-2.5 rounded-xl border text-left transition-all ${
-                                regData.role === 'startup'
-                                  ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-bold shadow-md shadow-emerald-500/10 ring-2 ring-emerald-500/20'
-                                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                              }`}
-                            >
-                              <Rocket className="w-3.5 h-3.5 text-emerald-600 mb-0.5" />
-                              <div className="text-xs font-bold">Startup / Company</div>
-                              <div className="text-[10px] text-slate-500">DPIIT Exempt</div>
-                            </button>
 
-                            <button
-                              type="button"
-                              onClick={() => setRegData({ ...regData, role: 'department' })}
-                              className={`p-2.5 rounded-xl border text-left transition-all ${
-                                regData.role === 'department'
-                                  ? 'bg-amber-50 border-amber-500 text-amber-950 font-bold shadow-md shadow-amber-500/10 ring-2 ring-amber-500/20'
-                                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                              }`}
-                            >
-                              <Building2 className="w-3.5 h-3.5 text-amber-600 mb-0.5" />
-                              <div className="text-xs font-bold">Department / Ministry</div>
-                              <div className="text-[10px] text-slate-500">Public Buyer</div>
-                            </button>
-                          </div>
-                        </div>
-                      )}
 
                       {/* Select Department / Ministry Connection */}
                       {regData.role === 'department' && (

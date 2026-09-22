@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import {
   TrendingUp, Plus, ArrowRight, MessagesSquare,
   CheckSquare, Clock, DollarSign, ShieldCheck, Rocket,
@@ -97,19 +98,20 @@ const ActionCard: React.FC<ActionCardProps> = ({ title, description, href, icon,
 const DepartmentDashboard: React.FC<{ stats: any; loading: boolean; challenges: any[] }> = ({
   stats, loading, challenges,
 }) => {
-  const activityData = [
-    { month: 'Apr', proposals: 12, pilots: 3 },
-    { month: 'May', proposals: 19, pilots: 5 },
-    { month: 'Jun', proposals: 28, pilots: 7 },
-    { month: 'Jul', proposals: 22, pilots: 9 },
-    { month: 'Aug', proposals: 34, pilots: 11 },
-    { month: 'Sep', proposals: 41, pilots: 14 },
+  const router = useRouter();
+  const activityData = stats?.activity_data?.length > 0 ? stats.activity_data : [
+    { month: 'Apr', proposals: 0, pilots: 0 },
+    { month: 'May', proposals: 0, pilots: 0 },
+    { month: 'Jun', proposals: 0, pilots: 0 },
+    { month: 'Jul', proposals: 0, pilots: 0 },
+    { month: 'Aug', proposals: 0, pilots: 0 },
+    { month: 'Sep', proposals: 0, pilots: 0 },
   ];
-  const statusData = [
-    { name: 'Open', value: 45 },
-    { name: 'Evaluating', value: 30 },
-    { name: 'Pilot', value: 20 },
-    { name: 'Done', value: 5 },
+  const statusData = stats?.status_data?.length > 0 ? stats.status_data.map((s: any) => ({
+    name: s.name.charAt(0).toUpperCase() + s.name.slice(1).replace('_', ' '),
+    value: s.value
+  })) : [
+    { name: 'No Data', value: 1 },
   ];
 
   return (
@@ -148,8 +150,8 @@ const DepartmentDashboard: React.FC<{ stats: any; loading: boolean; challenges: 
               <YAxis stroke="#94a3b8" fontSize={12} />
               <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', fontSize: '12px' }} />
               <Legend wrapperStyle={{ fontSize: '12px' }} />
-              <Bar dataKey="proposals" name="Proposals" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="pilots"    name="Pilots"    fill="#a855f7" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="proposals" name="Proposals" fill="#0ea5e9" radius={[4, 4, 0, 0]} onClick={() => router.push('/proposals')} style={{ cursor: 'pointer' }} />
+              <Bar dataKey="pilots"    name="Pilots"    fill="#a855f7" radius={[4, 4, 0, 0]} onClick={() => router.push('/pilots')} style={{ cursor: 'pointer' }} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -162,7 +164,12 @@ const DepartmentDashboard: React.FC<{ stats: any; loading: boolean; challenges: 
             <PieChart>
               <Pie data={statusData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value">
                 {statusData.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                  <Cell 
+                    key={index} 
+                    fill={COLORS[index % COLORS.length]} 
+                    onClick={() => router.push(`/challenges?status=${statusData[index].name.toLowerCase().replace(' ', '_')}`)}
+                    style={{ cursor: 'pointer', outline: 'none' }}
+                  />
                 ))}
               </Pie>
               <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', fontSize: '12px' }} />

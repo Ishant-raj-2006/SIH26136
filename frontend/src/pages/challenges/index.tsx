@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, DollarSign, Tag, Search, Plus, TrendingUp, Edit3, Trash2, X, Check, Building2, AlertTriangle } from 'lucide-react';
 import { useAppStore } from '@/lib/stores/app';
@@ -22,7 +23,14 @@ const ChallengesPage: NextPageWithLayout = () => {
     goToPage(1);
   });
 
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState('');
+
+  useEffect(() => {
+    if (router.isReady && router.query.status && typeof router.query.status === 'string') {
+      setStatusFilter(router.query.status);
+    }
+  }, [router.isReady, router.query.status]);
   const [viewMyOnly, setViewMyOnly] = useState(false);
 
   // Edit Challenge Modal state

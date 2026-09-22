@@ -79,11 +79,11 @@ export const SectionHeader: React.FC<{ activeTab?: string }> = ({ activeTab }) =
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-3.5 shrink-0 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-700 to-indigo-800 p-0.5 shadow-md shadow-blue-900/20 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-              <div className="w-full h-full bg-blue-950 rounded-[14px] flex items-center justify-center group-hover:bg-blue-900 transition-colors">
-                <Building2 className="w-5.5 h-5.5 text-amber-400" />
-              </div>
-            </div>
+            <img 
+              src="/emblem.svg" 
+              alt="Government of India" 
+              className="h-14 w-auto object-contain group-hover:scale-105 transition-transform duration-200 drop-shadow-md opacity-90 dark:invert"
+            />
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">GoPilot-X</span>

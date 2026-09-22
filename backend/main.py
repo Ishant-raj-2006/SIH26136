@@ -1386,24 +1386,55 @@ def get_dashboard_stats(email: str = Depends(auth.verify_token),
     """Get dashboard statistics for current user"""
     user = db.query(models.User).filter(models.User.email == email).first()
     
-    if user.role == "department":
-        challenges_count = db.query(models.Challenge).filter(
-            models.Challenge.creator_id == user.id
-        ).count()
-        proposals_count = db.query(models.Proposal).join(
-            models.Challenge
-        ).filter(models.Challenge.creator_id == user.id).count()
-        pilots_count = db.query(models.Pilot).join(
-            models.Challenge
-        ).filter(models.Challenge.creator_id == user.id).count()
+    if user.role in ["department", "ministry", "admin", "evaluator"]:
+        from sqlalchemy import func
+        if user.role == "department":
+            base_query = db.query(models.Challenge).filter(models.Challenge.creator_id == user.id)
+            proposals_query = db.query(models.Proposal).join(models.Challenge).filter(models.Challenge.creator_id == user.id)
+            pilots_query = db.query(models.Pilot).join(models.Challenge).filter(models.Challenge.creator_id == user.id)
+            status_counts = db.query(models.Challenge.status, func.count(models.Challenge.id)).filter(models.Challenge.creator_id == user.id).group_by(models.Challenge.status).all()
+        else:
+            base_query = db.query(models.Challenge)
+            proposals_query = db.query(models.Proposal)
+            pilots_query = db.query(models.Pilot)
+            status_counts = db.query(models.Challenge.status, func.count(models.Challenge.id)).group_by(models.Challenge.status).all()
+            
+        challenges_count = base_query.count()
+        proposals_count = proposals_query.count()
+        pilots_count = pilots_query.count()
+        total_budget = base_query.with_entities(func.sum(models.Challenge.budget)).scalar() or 0
+        status_data = [{"name": s[0], "value": s[1]} for s in status_counts]
+        
+        # Group activity data (proposals and pilots) by month
+        import datetime
+        month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        activity_map = {}
+        now = datetime.datetime.now()
+        for i in range(5, -1, -1):
+            m = (now.month - i - 1) % 12
+            activity_map[month_names[m]] = {"month": month_names[m], "proposals": 0, "pilots": 0}
+            
+        for p in proposals_query.all():
+            if hasattr(p, 'created_at') and p.created_at:
+                m_str = month_names[p.created_at.month - 1]
+                if m_str in activity_map:
+                    activity_map[m_str]["proposals"] += 1
+                    
+        for p in pilots_query.all():
+            if hasattr(p, 'created_at') and p.created_at:
+                m_str = month_names[p.created_at.month - 1]
+                if m_str in activity_map:
+                    activity_map[m_str]["pilots"] += 1
+                    
+        activity_data = list(activity_map.values())
         
         return {
             "challenges": challenges_count,
             "proposals": proposals_count,
             "pilots": pilots_count,
-            "total_budget": db.query(models.Challenge).filter(
-                models.Challenge.creator_id == user.id
-            ).count() * 0  # Calculate actual
+            "total_budget": total_budget,
+            "status_data": status_data,
+            "activity_data": activity_data
         }
     
     elif user.role == "startup":
