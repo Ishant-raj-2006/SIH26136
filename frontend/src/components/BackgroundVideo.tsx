@@ -128,26 +128,17 @@ export const BackgroundVideo: React.FC<BackgroundVideoProps> = ({
       {/* Fallback Animated Canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover" />
 
-      {/* HTML5 Video element */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
+      {/* Static Background Image */}
+      <img
+        src="/dashboard-bg.jpg"
+        alt="Background"
         className={`absolute inset-0 w-full h-full object-cover filter transition-opacity duration-1000 ${
-          mode === 'light' ? 'opacity-35 brightness-105 contrast-95' : 'opacity-85 brightness-95 contrast-105'
+          mode === 'light' ? 'opacity-85 brightness-105 contrast-95' : 'opacity-85 brightness-95 contrast-105'
         }`}
         onError={(e) => {
           (e.currentTarget as HTMLElement).style.display = 'none';
         }}
-      >
-        <source src={videoSrc} type="video/mp4" />
-        <source src="/Vid.mp4" type="video/mp4" />
-        <source src="/vid.mp4" type="video/mp4" />
-        <source src="/Vid.MP4" type="video/mp4" />
-        <source src="/background-animation.mp4" type="video/mp4" />
-        <source src="/background-animation.webm" type="video/webm" />
-      </video>
+      />
 
       {/* Glassmorphism Gradient Overlay */}
       <div
