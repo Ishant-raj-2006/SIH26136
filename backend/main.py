@@ -233,27 +233,6 @@ def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(db_user)
 
-        # Auto-create initial startup entity so new startups immediately have an active record
-        if role_value == models.UserRole.STARTUP or str(user_data.role).lower() == "startup":
-            org_name = user_data.organization or f"{user_data.full_name}'s Startup"
-            existing_s = db.query(models.Startup).filter(models.Startup.name == org_name).first()
-            if existing_s:
-                org_name = f"{org_name} ({db_user.id})"
-            new_startup = models.Startup(
-                name=org_name,
-                description=f"DPIIT-recognized innovative enterprise registered by {user_data.full_name}.",
-                user_id=db_user.id,
-                industry="AI & DeepTech",
-                founded_year=2024,
-                team_size=5,
-                funding_stage="seed",
-                technologies=["AI", "Python", "Cloud"],
-                verification_score=8.5,
-                is_verified=True
-            )
-            db.add(new_startup)
-            db.commit()
-
         return db_user
     except Exception as e:
         db.rollback()
@@ -291,21 +270,6 @@ def clerk_sync(payload: dict, db: Session = Depends(get_db)):
         )
         db.add(user)
         db.commit()
-        db.refresh(user)
-        
-        # Create Startup record if startup
-        if role_enum == models.UserRole.STARTUP:
-            new_startup = models.Startup(
-                name=f"{full_name}'s Enterprise",
-                description=f"DPIIT-recognized enterprise connected to {dept}.",
-                user_id=user.id,
-                industry="AI & DeepTech",
-                official_email=email,
-                is_verified=True
-            )
-            db.add(new_startup)
-            db.commit()
-            
     access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(
         data={"sub": user.email, "id": user.id, "role": user.role},
@@ -492,22 +456,7 @@ def get_my_startup(email: str = Depends(auth.verify_token), db: Session = Depend
         raise HTTPException(status_code=404, detail="User not found")
     startup = db.query(models.Startup).filter(models.Startup.user_id == user.id).first()
     if not startup:
-        org_name = user.organization or f"{user.full_name}'s Startup"
-        startup = models.Startup(
-            name=org_name,
-            description=f"DPIIT-recognized innovative enterprise registered by {user.full_name}.",
-            user_id=user.id,
-            industry="AI & DeepTech",
-            founded_year=2024,
-            team_size=5,
-            funding_stage="seed",
-            technologies=["AI", "Python", "Cloud"],
-            verification_score=8.5,
-            is_verified=True
-        )
-        db.add(startup)
-        db.commit()
-        db.refresh(startup)
+        raise HTTPException(status_code=404, detail="No startup profile found")
     return startup
 
 @app.get("/api/startups/{startup_id}", response_model=schemas.StartupResponse)
