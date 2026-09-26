@@ -37,7 +37,7 @@ interface AuthDrawerProps {
 
 const allEntityCategories = [
   { id: 'company', label: '🏢 Company', username: 'company_user', pass: 'Startup@123', desc: 'Enterprise' },
-  { id: 'department', label: '🏛️ Department', username: 'department_user', pass: 'Government@123', desc: 'Public Buyer' },
+  { id: 'department', label: '🏛️ Department', username: 'government_user', pass: 'Government@123', desc: 'Public Buyer' },
 ];
 
 const entityCategories = allEntityCategories.filter(cat => {
