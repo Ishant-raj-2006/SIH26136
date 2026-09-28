@@ -34,6 +34,19 @@ services:
       - backend
     networks:
       - startup-network
+  db:
+    image: postgres:13
+    container_name: startup-procurement-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=procurement
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - startup-network
 
 networks:
   startup-network:
