@@ -196,7 +196,7 @@ SIH26136/
 * **Problem Statement**: SIH26136 — Startup-Friendly Public Procurement Mechanism
 * **Platform Name**: **GoPilot-X BHARAT**
 * **Target Audience**: Central/State Ministries, DPIIT Startups, Evaluation Committees, GeM Procurement Officers
-* **Developed For**: Smart India Hackathon (SIH) 2024
+* **Developed For**: Smart India Hackathon (SIH) 2026
 Hello
 ---
 *Dedicated to building transparent, agile, and merit-driven digital public infrastructure for Bharat's deep-tech innovators.*
