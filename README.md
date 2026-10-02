@@ -1,6 +1,6 @@
 # GoPilot-X BHARAT 🇮🇳
 ### Startup-Friendly Public Procurement Mechanism & Innovation Sandbox Platform
-**Smart India Hackathon 2024 — Problem Statement SIH26136**
+**Smart India Hackathon 2026 — Problem Statement SIH26136**
 
 [![Framework](https://img.shields.io/badge/Frontend-Next.js%2014%20(Pages%20Router)-blue?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![Backend](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Python%203.11-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
